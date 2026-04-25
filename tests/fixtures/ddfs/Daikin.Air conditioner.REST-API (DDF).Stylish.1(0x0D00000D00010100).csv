@@ -1,0 +1,317 @@
+*SIGNATURE
+;SIGN_ALGO;ECDSA-SHA384;;
+;SIGN_DATE;2026-04-25 16:44:25;;
+;FILE_VERDATE;f873754c 2026-04-21 07:56:56;;
+;SIGNATURE;MGUCMQDNxQghEGI3YppD9cgeV/T2/ZS9ZjYnCVL+4icdqJ13q31WuWeYcXAWfuii40KqUVMCMCMunlXLm1XRl/Pz3txh1m0YsmoDuQv6a5tYn8MQPV1uuEe8ZNVt/IEqdJLWm3opLg==;;
+*GENERAL;;;;;;;;;;;;;;;;;;;;;;;
+;DEVICE;Stylish;;
+;MANUFACTURER;Daikin;;
+;TYPE;Air conditioner;;
+;PROTOCOL;REST-API (DDF);;
+;MODEL_NR;1;;
+;VERSION_NR;1;;
+;ID;0x0D00000D00010100;;
+;MIN_CONTROL_VERSION;V10384-01;;
+;TIMESTAMP;2026-04-24 06:50:07;
+*GENERAL;;;;;;;;;;;;;;;;;;;;;;;
+;CONNECTION;DOMAIN;0:SERIALPORT,1:SERIALPORT+,2:IPADDRESS,3:DOMAIN,4:DEFDOMAIN;;;;;;;;;;;;;;;;;;;;
+;AUTHENTIFICATION;OAUTH_DEVICE_FLOW;"0:NONE,1:PASSWORD,2:DEFPASSWORD;3:OAUTH_DEVICE_FLOW;4:OAUTH_GRANT_FLOW";;;;;;;;;;;;;;;;;;;;
+#;IPADDRESS;;;;;;;;;;;;;;;;;;;;;;
+;DOMAIN;;https://idp.onecta.daikineurope.com/;;;;;;;;;;;;;;;;;;;;
+;SLAVESMAX;10;;;;;;;;;;;;;;;;;;;;;
+;CLIENT_ID;;;;;;;;;;;;;;;;;;;;;;
+;CLIENT_SECRET;;;;;;;;;;;;;;;;;;;;;;
+;REDIRECT_URI;;;;;;;;;;;;;;;;;;;;;;
+;AUTH_INFO;;;;;;;;;;;;;;;;;;;;;;
+;DEVICE_CODE;;;;;;;;;;;;;;;;;;;;;;
+;ACCESS_TOKEN;;;;;;;;;;;;;;;;;;;;;;
+;EXPIRES_IN;;;;;;;;;;;;;;;;;;;;;;
+;ID_TOKEN;;;;;;;;;;;;;;;;;;;;;;
+;REFRESH_TOKEN;;;;;;;;;;;;;;;;;;;;;;
+;REFRESH_COUNT;;;;;;;;;;;;;;;;;;;;;;
+;TOKEN_TYPE;;;;;;;;;;;;;;;;;;;;;;
+;CONTROLLER_UID;;;;;;;;;;;;;;;;;;;;;;
+;CODE;;;;;;;;;;;;;;;;;;;;;;
+;EXPIRES_DATE;;;;;;;;;;;;;;;;;;;;;;
+;URL;;;;;;;;;;;;;;;;;;;;;;
+;DEBUGPORT;8500;;;;;;;;;;;;;;;;;;;;;
+;VERSION_INFO;;
+;VERSION_USER;hw;
+;REVISION;f873754c 2026-04-21 07:56:56;;
+*COMMAND;ID;ALIAS;FORMULA;;;;;;;;;;;;;;;;;;;;
+;0;AUTHORIZE;"""TMP_ID:=SYSTEMINFO(ID);
+TMP_RANDOM:=RANDOMSTRING(10);
+$.GPARAM.CONTROLLER_UID:=CONCAT(TMP_ID,TMP_RANDOM);
+AUTHORIZE.F:=1; """;;;;;;;;;;;;;;;;;;;;
+#;1;GETAPPLIANCES;"""GETAPPLIANCES.F:=1;""";;;;;;;;;;;;;;;;;;;;
+;2;GETDATA;"""GETDATA.F:=1;""";;;;;;;;;;;;;;;;;;;;
+;3;REFRESHTOKEN;"""REFRESHTOKEN.F:=1;""";;;;;;;;;;;;;;;;;;;;
+#;;ISAUTHORIZE;"""ISAUTHORIZE.F:=1;""";;;;;;;;;;;;;;;;;;;;
+#;;GETGRANTTOKEN;"""GETGRANTTOKEN.F:=1;""";;;;;;;;;;;;;;;;;;;;
+*READ;ALIAS;METHOD;URL;DATATYPE;POLLING;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+*WRITE;ALIAS;METHOD;URL;DATATYPE;FORMULA;;;;;;;;;;;;;;;;;;
+;AUTHORIZE;URL;;JSON;"""$.GPARAM.URL:=AUTHORIZE.URL;
+X.62 := $.GPARAM.URL;
+STARTAUTHORIZE.F:=1;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;url;v1/oidc/authorize;;;STRING;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;arg;client_id;;$.GPARAM.CLIENT_ID;STRING;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;arg;response_type;code;;STRING;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;arg;redirect_uri;;$.GPARAM.REDIRECT_URI;STRING;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;arg;scope;openid onecta:basic.integration;;STRING;;;;;;;;;;;;;;;
+;ARGS;AUTHORIZE;;arg;state;;$.GPARAM.CONTROLLER_UID;STRING;;;;;;;;;;;;;;;
+;STARTAUTHORIZE;GET;https://devicelib.my-gekko.com/OAuth.php;JSON;"""IF STARTAUTHORIZE.HTTP_CODE==200  THEN
+""POLLTOKENACTIVE:=2;
+ENDIF;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;STARTAUTHORIZE;;arg;action;NEW;;STRING;;;;;;;;;;;;;;;
+;ARGS;STARTAUTHORIZE;;arg;state;;$.GPARAM.CONTROLLER_UID;STRING;;;;;;;;;;;;;;;
+;ARGS;STARTAUTHORIZE;;arg;grant_type;authorization_code;;STRING;;;;;;;;;;;;;;;
+;ISAUTHORIZE;GET;https://devicelib.my-gekko.com/OAuth.php;JSON;"""IF ISAUTHORIZE.HTTP_CODE==200 THEN
+DEBUG_INFO:='AUTHORIZED';
+DEBUG(DEBUG_INFO);
+$.GPARAM.CODE:=ISAUTHORIZE.VALUE.code;
+GETGRANTTOKEN.F:=1;
+POLLTOKENACTIVE:=0;
+ELSE
+DEBUG_INFO:=ISAUTHORIZE.VALUE.error_description;
+DEBUG(DEBUG_INFO);
+ENDIF;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;ISAUTHORIZE;;arg;action;GET;;STRING;;;;;;;;;;;;;;;
+;ARGS;ISAUTHORIZE;;arg;state;;$.GPARAM.CONTROLLER_UID;STRING;;;;;;;;;;;;;;;
+;ARGS;ISAUTHORIZE;;arg;grant_type;authorization_code;;STRING;;;;;;;;;;;;;;;
+;GETGRANTTOKEN;POST;;X-WWW-FORM-URLENCODED;"""BEARER:='Bearer';
+IF GETGRANTTOKEN.HTTP_CODE==200 && ISEQUAL(GETGRANTTOKEN.VALUE.token_type,BEARER) THEN
+DEBUG_INFO:='ACCESS TOKEN RECEIVED!';
+X.50 := 'Zugriffstoken erhalten!';
+GETAPPLIANCES.F := 1;
+$.GPARAM.AUTH_INFO:=DEBUG_INFO;
+DEBUG(DEBUG_INFO);
+$.GPARAM.ACCESS_TOKEN:=GETGRANTTOKEN.VALUE.access_token;
+$.GPARAM.EXPIRES_IN:=GETGRANTTOKEN.VALUE.expires_in;
+$.GPARAM.ID_TOKEN:=GETGRANTTOKEN.VALUE.id_token;
+$.GPARAM.REFRESH_TOKEN:=GETGRANTTOKEN.VALUE.refresh_token;
+$.GPARAM.TOKEN_TYPE:=GETGRANTTOKEN.VALUE.token_type;
+$.GPARAM.EXPIRES_DATE:=(GETGRANTTOKEN.VALUE.expires_in/10*9)+$.SYS.TIME;
+$.GPARAM.REFRESH_COUNT:=$.GPARAM.REFRESH_COUNT+1;
+POLLTOKENACTIVE:=0;
+SAVE_JSON($.GPARAM.ACCESS_TOKEN,$.GPARAM.EXPIRES_IN,$.GPARAM.ID_TOKEN,$.GPARAM.REFRESH_TOKEN,$.GPARAM.TOKEN_TYPE,$.GPARAM.EXPIRES_DATE,$.GPARAM.REFRESH_COUNT);
+ELSE IF GETGRANTTOKEN.HTTP_CODE>=400 THEN
+DEBUG_INFO:=GETGRANTTOKEN.VALUE.error_description;
+$.GPARAM.AUTH_INFO:=DEBUG_INFO;
+DEBUG(DEBUG_INFO);
+ENDIF;
+GETGRANTTOKEN.F:=0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;url;v1/oidc/token;;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;header;Connection;keep-alive;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;data;client_id;;$.GPARAM.CLIENT_ID;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;data;client_secret;;$.GPARAM.CLIENT_SECRET;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;data;redirect_uri;;$.GPARAM.REDIRECT_URI;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;data;grant_type;authorization_code;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETGRANTTOKEN;;data;code;;$.GPARAM.CODE;STRING;;;;;;;;;;;;;;;
+;REFRESHTOKEN;POST;;X-WWW-FORM-URLENCODED;"""BEARER:='Bearer';
+IF REFRESHTOKEN.HTTP_CODE==200 && ISEQUAL(REFRESHTOKEN.VALUE.token_type,BEARER) THEN
+DEBUG_INFO:='ACCESS TOKEN RECEIVED!';
+$.GPARAM.AUTH_INFO:=DEBUG_INFO;
+DEBUG(DEBUG_INFO);
+$.GPARAM.ACCESS_TOKEN:=REFRESHTOKEN.VALUE.access_token;
+$.GPARAM.EXPIRES_IN:=REFRESHTOKEN.VALUE.expires_in;
+$.GPARAM.ID_TOKEN:=REFRESHTOKEN.VALUE.id_token;
+$.GPARAM.REFRESH_TOKEN:=REFRESHTOKEN.VALUE.refresh_token;
+$.GPARAM.TOKEN_TYPE:=REFRESHTOKEN.VALUE.token_type;
+$.GPARAM.REFRESH_COUNT:=$.GPARAM.REFRESH_COUNT+1;
+$.GPARAM.EXPIRES_DATE:=(REFRESHTOKEN.VALUE.expires_in/10*9)+$.SYS.TIME;
+POLLTOKENACTIVE:=0;
+SAVE_JSON($.GPARAM.ACCESS_TOKEN,$.GPARAM.EXPIRES_IN,$.GPARAM.ID_TOKEN,$.GPARAM.REFRESH_TOKEN,$.GPARAM.TOKEN_TYPE,$.GPARAM.EXPIRES_DATE,$.GPARAM.REFRESH_COUNT);
+ELSE IF REFRESHTOKEN.HTTP_CODE>=400 THEN
+DEBUG_INFO:=REFRESHTOKEN.VALUE.error_description;
+$.GPARAM.AUTH_INFO:=DEBUG_INFO;
+DEBUG(DEBUG_INFO);
+ENDIF;
+REFRESHTOKEN.F:=0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;url;v1/oidc/token;;;STRING;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;header;Connection;keep-alive;;STRING;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;data;client_id;;$.GPARAM.CLIENT_ID;STRING;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;data;client_secret;;$.GPARAM.CLIENT_SECRET;STRING;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;data;grant_type;refresh_token;;STRING;;;;;;;;;;;;;;;
+;ARGS;REFRESHTOKEN;;data;refresh_token;;$.GPARAM.REFRESH_TOKEN;STRING;;;;;;;;;;;;;;;
+;GETAPPLIANCES;GET;https://api.onecta.daikineurope.com/;JSON;"""IF GETAPPLIANCES.HTTP_CODE==200  THEN
+$.GPARAM.SLAVELIST:=GETAPPLIANCES.VALUE.[0].gatewayDevices[0];
+DEBUG($.GPARAM.SLAVELIST);
+$.GPARAM.REFRESH_COUNT:=$.GPARAM.REFRESH_COUNT+1;
+ELSE 
+DEBUG_INFO:='FEHLER';
+DEBUG(DEBUG_INFO);
+ENDIF;
+DEBUG(GETAPPLIANCES.HTTP_DATA);""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETAPPLIANCES;;url;v1/sites;;;;;;;;;;;;;;;;;;
+#;ARGS;GETAPPLIANCES;;header;Content-Type;application/json;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETAPPLIANCES;;header;Authorization;;$.GPARAM.ACCESS_TOKEN;Bearer %s;;;;;;;;;;;;;;;
+;GETDATA;GET;https://api.onecta.daikineurope.com/;;"""IF GETDATA.HTTP_CODE == 200 THEN
+    X.10 := GETDATA.VALUE.managementPoints[1].name.value;
+    X.11 := GETDATA.VALUE.managementPoints[0].modelInfo.value;
+    X.13 := GETDATA.VALUE.isCloudConnectionUp.value;
+    X.14 := GETDATA.VALUE.managementPoints[1].isInErrorState.value;
+    X.15 := GETDATA.VALUE.managementPoints[1].errorCode.value;
+    X.16 := GETDATA.VALUE.timestamp;
+    X.17 := GETDATA.VALUE.managementPoints[0].ipAddress.value;
+    X.18 := GETDATA.VALUE.managementPoints[0].macAddress.value;
+    X.20 := GETDATA.VALUE.managementPoints[1].sensoryData.value.roomTemperature.value;
+    X.21 := GETDATA.VALUE.managementPoints[1].sensoryData.value.outdoorTemperature.value;
+    X.22 := GETDATA.VALUE.managementPoints[1].onOffMode.value;
+    X.23 := GETDATA.VALUE.managementPoints[1].operationMode.value;
+    X.28 := GETDATA.VALUE.managementPoints[1].powerfulMode.value;
+    X.50 := '-';
+    X.52 := 1;
+ELSE
+    DEBUG(GETDATA.VALUE.error_description);
+    DEBUG(GETDATA.HTTP_DATA);
+    DEBUG(GETDATA.VALUE.message);
+    X.50 := GETDATA.VALUE.message;
+    X.52 := 2;
+   ENDIF;
+IF (GETDATA.HTTP_CODE == 200) && ISEQUAL(GETDATA.VALUE.managementPoints[1].operationMode.value,'auto') THEN
+    X.40 := GETDATA.VALUE.managementPoints[1].temperatureControl.value.operationModes.auto.setpoints.roomTemperature.value;
+    X.41 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.auto.fanSpeed.currentMode.value;
+    X.42 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.auto.fanSpeed.modes.fixed.value;
+    X.43 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.auto.fanDirection.horizontal.currentMode.value;
+    X.44 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.auto.fanDirection.vertical.currentMode.value;
+ELSE IF (GETDATA.HTTP_CODE == 200) && ISEQUAL(GETDATA.VALUE.managementPoints[1].operationMode.value,'dry') THEN
+    X.40 := GETDATA.VALUE.managementPoints[1].temperatureControl.value.operationModes.dry.setpoints.roomTemperature.value;
+    X.41 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.dry.fanSpeed.currentMode.value;
+    X.42 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.dry.fanSpeed.modes.fixed.value;
+    X.43 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.dry.fanDirection.horizontal.currentMode.value;
+    X.44 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.dry.fanDirection.vertical.currentMode.value;
+ELSE IF (GETDATA.HTTP_CODE == 200) && ISEQUAL(GETDATA.VALUE.managementPoints[1].operationMode.value,'cooling') THEN
+    X.40 := GETDATA.VALUE.managementPoints[1].temperatureControl.value.operationModes.cooling.setpoints.roomTemperature.value;
+    X.41 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.cooling.fanSpeed.currentMode.value;
+    X.42 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.cooling.fanSpeed.modes.fixed.value;
+    X.43 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.cooling.fanDirection.horizontal.currentMode.value;
+    X.44 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.cooling.fanDirection.vertical.currentMode.value;
+ELSE IF (GETDATA.HTTP_CODE == 200) && ISEQUAL(GETDATA.VALUE.managementPoints[1].operationMode.value,'heating') THEN
+    X.40 := GETDATA.VALUE.managementPoints[1].temperatureControl.value.operationModes.heating.setpoints.roomTemperature.value;
+    X.41 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.heating.fanSpeed.currentMode.value;
+    X.42 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.heating.fanSpeed.modes.fixed.value;
+    X.43 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.heating.fanDirection.horizontal.currentMode.value;
+    X.44 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.heating.fanDirection.vertical.currentMode.value;
+ELSE IF (GETDATA.HTTP_CODE == 200) && ISEQUAL(GETDATA.VALUE.managementPoints[1].operationMode.value,'fanOnly') THEN
+    X.40 := GETDATA.VALUE.managementPoints[1].temperatureControl.value.operationModes.fanOnly.setpoints.roomTemperature.value;
+    X.41 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.fanOnly.fanSpeed.currentMode.value;
+    X.42 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.fanOnly.fanSpeed.modes.fixed.value;
+    X.43 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.fanOnly.fanDirection.horizontal.currentMode.value;
+    X.44 := GETDATA.VALUE.managementPoints[1].fanControl.value.operationModes.fanOnly.fanDirection.vertical.currentMode.value;
+ENDIF;
+X.46 := X.20 * 10;
+X.47 := X.21 * 10;
+X.48 := X.40 * 10;
+GETDATA.F := 0;""";;;;;;;;;;;;;;;;;;
+;ARGS;GETDATA;;url;v1/gateway-devices/;;$SLAVE;STRING;;;;;;;;;;;;;;;
+;ARGS;GETDATA;;header;Authorization;;$.GPARAM.ACCESS_TOKEN;Bearer %s;;;;;;;;;;;;;;;
+;SETSTATE;PATCH;https://api.onecta.daikineurope.com/;JSON;"""DEBUG(SETSTATE.HTTP_CODE);
+DEBUG(SETSTATE.HTTP_DATA);
+SETSTATE.F := 0;""";;;;;;;;;;;;;;;;;;
+;ARGS;SETSTATE;;url;v1/gateway-devices/;;$SLAVE;STRING;;;;;;;;;;;;;;;
+;ARGS;SETSTATE;;url;/management-points/climateControl/characteristics/onOffMode;;;STRING;;;;;;;;;;;;;;;
+;ARGS;SETSTATE;;data;value;;SONOFF;STRING;;;;;;;;;;;;;;;
+;ARGS;SETSTATE;;header;Authorization;;$.GPARAM.ACCESS_TOKEN;Bearer %s;;;;;;;;;;;;;;;
+*GROUP;ALIAS;ID;NAME;;;;;;;;;;;;;;;;;;;;
+;INFO;0;info;;;;;;;;;;;;;;;;;;;;
+;DEVICE;1;device;;;;;;;;;;;;;;;;;;;;
+*ITEM;ALIAS;NAME;ID;VISIBILITY;UNIT;TYPE;DEFAULT;WFORMULA;RFORMULA;POLLING;;;;;;;;;;;;;
+;ID;ID;2;HIDDEN;;;;;"""X.2:=$.PARAM.SLAVE;""";5000;;;;;;;;;;;;;
+;NAME  ;Name;10;HIDDEN;;;;;"""IF LEN($.GPARAM.ACCESS_TOKEN) > 0 &&  LEN($.GPARAM.SLAVELIST) > 0 THEN
+    GETDATA.F:=1;
+ENDIF;""";600000;;;;;;;;;;;;;
+;MODEL  ;Model;11;HIDDEN;;;;;;;;;;;;;;;;;;;
+;CLOUD  ;Cloud;13;HIDDEN;;;;;;;;;;;;;;;;;;;
+;FEHLER  ;Fehler;14;HIDDEN;;;;;;;;;;;;;;;;;;;
+;FEHLERCODE  ;Fehlercode;15;HIDDEN;;;;;;;;;;;;;;;;;;;
+;ZEIT  ;Zeit;16;HIDDEN;;;;;;;;;;;;;;;;;;;
+;IP  ;IP;17;HIDDEN;;;;;;;;;;;;;;;;;;;
+;MAC  ;MAC;18;HIDDEN;;;;;;;;;;;;;;;;;;;
+;RAUMTEMP  ;Raumtemp;20;;∞C;;;;;;;;;;;;;;;;;;
+;AUSSENTEMP  ;Aussentemp;21;;∞C;;;;;;;;;;;;;;;;;;
+;BETRIEB  ;Betrieb;22;HIDDEN;on, off;;;;;;;;;;;;;;;;;;
+;MODUS  ;Modus;23;HIDDEN;auto, dry, cooling, heating, fanOnly;;;;;;;;;;;;;;;;;;
+;BOOST  ;Boost;28;HIDDEN;on, off;;;;;;;;;;;;;;;;;;
+;SOLLTEMP_AKTUELL  ;Solltemp_aktuell;40;;∞C;;;;;;;;;;;;;;;;;;
+;VENTILATOR_AKTUELL  ;Ventilator_aktuell;41;HIDDEN;fixed, auto, quiet;;;;;;;;;;;;;;;;;;
+;STUFE_AKTUELL  ;Stufe_aktuell;42;;von 5;;;;;;;;;;;;;;;;;;
+;HORIZ_LUFT_AKTUELL  ;Horiz_Luft_aktuell;43;HIDDEN;stop, swing;;;;;;;;;;;;;;;;;;
+;VERT_LUFT_AKTUELL  ;Vert_Luft_aktuell;44;HIDDEN;stop, swing;;;;;;;;;;;;;;;;;;
+;RAUMTEMP_10  ;Raumtemp_10;46;;∞C / 10;;;;;;;;;;;;;;;;;;
+;AU?ENTEMP_10  ;Auﬂentemp_10;47;;∞C / 10;;;;;;;;;;;;;;;;;;
+;SOLLTEMP_AKTUELL_10  ;Solltemp_aktuell_10;48;;∞C / 10;;;;;;;;;;;;;;;;;;
+;ABFRAGEMELDUNG  ;Abfragemeldung;50;HIDDEN;;;;;;;;;;;;;;;;;;;
+;LETZTE_ABFRAGE_VOR  ;Letzte_Abfrage_vor;51;;s;;;;"""IF GETDATA.HTTP_CODE == 200 THEN
+    X.51 := $.SYS.TIME - GETDATA.T;
+ENDIF;""";250;;;;;;;;;;;;;
+;ABFRAGEFEHLER  ;Abfragefehler;52;;0, 1 = Fehler;;;;;;;;;;;;;;;;;;
+;EIN_AUS  ;Ein_Aus;60;;;;;"""SETSTATE.F := 1;
+IF X.60 == 1 THEN
+    SONOFF := 'on';
+ELSE IF X.60 == 2 THEN
+    SONOFF := 'off';
+ENDIF;
+X.60 := 0;""";;;;;;;;;;;;;;;
+;ABFRAGE  ;Abfrage;61;HIDDEN;;;;"""IF ( X.61 == 2 ) THEN
+    TMP_ID:=SYSTEMINFO(ID);
+    TMP_RANDOM:=RANDOMSTRING(10);
+    $.GPARAM.CONTROLLER_UID:=CONCAT(TMP_ID,TMP_RANDOM);
+   AUTHORIZE.F:=1;
+ELSE IF ( X.61 == 3 ) THEN
+    GETDATA.F := 1;
+ENDIF;""";;;;;;;;;;;;;;;
+;URL;url;62;HIDDEN;;;;;;;;;;;;;;;;;;;
+;EXPIRES_IN;EXPIRES_IN;150;HIDDEN;;;;;"""X.150:=$.PARAM.EXPIRES_IN;""";5000;;;;;;;;;;;;;
+;EXPIRES_DATE;EXPIRES_DATE;151;HIDDEN;;;;;"""X.151:=$.PARAM.EXPIRES_DATE;""";5000;;;;;;;;;;;;;
+;EXPIRES_REST;EXPIRES_REST;152;HIDDEN;;;;;"""X.152:=$.PARAM.EXPIRES_DATE-$.SYS.TIME;""";5000;;;;;;;;;;;;;
+;SLAVE;SLAVE;153;HIDDEN;;;;;"""X.153:=$.PARAM.SLAVE;""";5000;;;;;;;;;;;;;
+;POLLTOKEN;POLLTOKEN;100;HIDDEN;;;;;"""IF POLLTOKENACTIVE==1 THEN GETDEVICETOKEN.F:=1; ELSE IF  POLLTOKENACTIVE==2 THEN  ISAUTHORIZE.F:=1; ENDIF; X.100:=POLLTOKENACTIVE;""";5000;;;;;;;;;;;;;
+;REFRESHTOKEN;REFRESHTOKEN;101;HIDDEN;;;;;"""IF  ($.PARAM.EXPIRES_IN>0 ) &&  (($.PARAM.EXPIRES_DATE-$.SYS.TIME)<=600) THEN 
+  REFRESHTOKEN.F:=1;
+  DEBUG($.SYS.TIME);
+  DEBUG(REFRESHTOKEN);
+ENDIF; """;5000;;;;;;;;;;;;;
+*OBJECT;GROUP;ID;ALIAS;TYPE;ENUM;ENUMTEXT;ENUMVAL;MIN;MAX;IOTYPE;DIGITS;ITEMID;UNIT;ALARM;ALARMVAL;ALARMTIME;OUTTYPE;CMDITEMID;COMMAND;COMMANDENUM;COMMANDVAL;VIEWTYPE;LOG
+;0;0;Abfrage;1;2;-,OK,Fehler;0,1,2;0;1;0;1;52;;>=;2;1;;61;1;starten;3;0;1
+;0;1;Meldung;3;;;;;;0;;50;;;;;;;;;;0;1
+;0;2;Abfrage vor;4;;;;0;100;0;1;51;s;;;;;;;;;0;0
+;0;3;Fehler;1;2;-,Ja;0,1;0;1;0;1;14;;;;;;;;;;0;1
+;0;4;Fehlercode;3;;;;;;0;;15;;;;;;;;;;0;1
+;0;5;Ger‰t;1;2;-,online;0,1;0;1;0;1;13;;;;;;;;;;0;1
+;0;6;Name;3;;;;;;0;;10;;;;;;;;;;0;1
+;0;7;Model;3;;;;;;0;;11;;;;;;;;;;0;1
+;0;8;IP;3;;;;;;0;;17;;;;;;;;;;0;1
+;0;9;Zugriff;1;;;;;;0;;;;;;;;61;1;autorisieren;2;2;1
+;0;10;URL;5;;;;;;0;;62;;;;;;;;;;2;1
+;1;0;Solltemp.;2;;;;-50;50;0;1;40;∞C;;;;;;;;;0;1
+;1;1;Raumtemp.;2;;;;-50;50;0;1;20;∞C;;;;;;;;;0;1
+;1;2;Auﬂentemp.;2;;;;-50;50;0;1;21;∞C;;;;;;;;;0;1
+;1;3;Betrieb;3;;;;;;0;;22;;;;;;60;2;ausschalten,einschalten;2,1;0;1
+;1;4;Modus;3;;;;;;0;;23;;;;;;;;;;0;1
+;1;5;Stufe;4;;;;0;5;0;1;42;von 5;;;;;;;;;0;1
+;1;6;Ventilator;3;;;;;;0;;41;;;;;;;;;;0;1
+         ;1;7;Horiz. Luft;3;;;;;;0;;43;;;;;;;;;;0;1
+;1;8;Vert. Luft;3;;;;;;0;;44;;;;;;;;;;0;1
+;1;9;Boost;3;;;;;;0;;28;;;;;;;;;;0;1
+;;;;;;;;;;;;;;;;;;;;;;;
+#;0;19;Zeit;3;;;;;;0;;16;;;;;;;;;;1;1
+;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+         ;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+         ;;;;;;;;;;;;;;;;;;;;;;;
+
+
