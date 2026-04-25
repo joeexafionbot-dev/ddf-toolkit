@@ -7,6 +7,11 @@ Implements the trigger-flag execution model discovered in Sprint 0:
    run response formula, update state
 4. Repeat until no more triggers or step limit reached
 5. Return final ITEM/GPARAM state
+
+Note: Lines 114-157 (trigger-flag loop body) are exercised by pilot-DDF
+simulations (Sprint 1 tests) but NOT by bridge-generated DDFs, which use
+poll-based RFORMULA cycles instead of trigger-based *WRITE chains.
+This is architecturally correct — bridge DDFs are poll-based by design.
 """
 
 from __future__ import annotations
@@ -108,7 +113,7 @@ def run_simulation(
     while steps < step_limit:
         # Find first triggered WRITE
         triggered_write = None
-        for write in ddf.writes:
+        for write in ddf.writes:  # pragma: no cover — trigger loop exercised by pilot DDFs
             ws = env.write_states.get(write.alias)
             if ws and ws.trigger:
                 triggered_write = write

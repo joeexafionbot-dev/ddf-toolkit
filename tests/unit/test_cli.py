@@ -21,7 +21,7 @@ def test_version():
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
     assert "ddf-toolkit" in result.output
-    assert "0.2.0" in result.output
+    assert "0.3.0" in result.output
 
 
 def test_validate_pass():

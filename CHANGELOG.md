@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] — 2026-04-26
+
+Sprint 2 release — HA-Bridge DDF Generator.
+
+### Added
+- **HA-Bridge Generator**: generate DDFs from Home Assistant entities
+  - 10 domain templates: switch, sensor, binary_sensor, lock, light, cover, fan, climate, media_player, vacuum
+  - HA Source Adapter: live REST API + JSON snapshot backends
+  - Integration Grouper: group by (manufacturer, model), 25-item split
+  - DDF Builder: compose templates into complete DDFs with standard sections
+  - String-vs-Enum mapping for closed-domain states (HVAC modes, lock states, etc.)
+- **AST → CSV Serializer**: round-trip DDF serialization
+- **Round-Trip Pipeline**: 5-stage validation (serialize → reparse → lint → simulate → sign)
+  - Every generated DDF validated before emission
+  - RoundTripReport with per-stage pass/fail
+- **Snapshot Anonymizer**: strip PII from HA snapshots
+  - Deterministic pseudonyms (per-snapshot seed)
+  - `--verify` mode with allowlist checking
+- **CLI**: `ddf bridge generate`, `ddf bridge inspect`, `ddf bridge coverage`
+- **Docs**: bridge.md, bridge-templates.md (per-domain documentation)
+- 321 tests, 85% coverage
+
 ## [0.2.0] — 2026-04-25
 
 Sprint 1 release — interpreter + simulator.
