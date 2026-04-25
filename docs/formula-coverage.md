@@ -1,28 +1,28 @@
 # Formula Operator Coverage
 
 Complete operator/function inventory from DeviceLib.pdf Section 2.6.
-Sprint 0 parses all tokens; execution is Sprint 1.
+Sprint 1 implements execution for all pilot-DDF operators.
 
 ## Control Flow
 
 | Operator | Sprint 0 (Parse) | Sprint 1 (Execute) | Source |
 |----------|:-:|:-:|--------|
-| `IF / THEN / ELSE / ENDIF` | PASS | planned | Pilot DDFs + DeviceLib p.24 |
-| `ELSE IF` | PASS | planned | Pilot DDFs |
-| `SWITCH / CASE / DEFAULT / ENDSWITCH` | PASS | planned | DeviceLib p.25 |
-| `FOR / TO / BY / DO / ENDFOR` | PASS | planned | DeviceLib p.25 |
+| `IF / THEN / ELSE / ENDIF` | PASS | DONE | Pilot DDFs + DeviceLib p.24 |
+| `ELSE IF` | PASS | DONE | Pilot DDFs |
+| `SWITCH / CASE / DEFAULT / ENDSWITCH` | PASS | DONE | DeviceLib p.25 |
+| `FOR / TO / BY / DO / ENDFOR` | PASS | DONE | DeviceLib p.25 |
 
 ## Assignment
 
 | Operator | Sprint 0 (Parse) | Sprint 1 (Execute) | Source |
 |----------|:-:|:-:|--------|
-| `:=` | PASS | planned | Pilot DDFs |
+| `:=` | PASS | DONE | Pilot DDFs |
 
 ## Comparison
 
 | Operator | Sprint 0 (Parse) | Sprint 1 (Execute) |
 |----------|:-:|:-:|
-| `==`, `!=`, `<`, `>`, `<=`, `>=` | PASS | planned |
+| `==`, `!=`, `<`, `>`, `<=`, `>=` | PASS | DONE |
 
 ## Logical / Bitwise
 
@@ -42,23 +42,23 @@ Sprint 0 parses all tokens; execution is Sprint 1.
 
 | Operator | Sprint 0 (Parse) | Sprint 1 (Execute) |
 |----------|:-:|:-:|
-| `+`, `-`, `*`, `/` | PASS | planned |
-| `^` (power) | PASS | planned |
+| `+`, `-`, `*`, `/` | PASS | DONE |
+| `^` (power) | PASS | DONE |
 
 ## Variable Access
 
 | Pattern | Sprint 0 (Parse) | Sprint 1 (Execute) |
 |---------|:-:|:-:|
-| `X.{ID}` | PASS | planned |
-| `ITEM.ALIAS` | PASS | planned |
-| `$.GPARAM.*`, `$.SYS.TIME`, `$.CONFIG.*`, `$.PARAM.*` | PASS | planned |
-| `$.SLAVE.x.yyy` | PASS | planned |
-| `ALIAS.VALUE.path[i].field` | PASS | planned |
-| `ALIAS.HTTP_CODE`, `ALIAS.HTTP_DATA`, `ALIAS.URL` | PASS | planned |
-| `ALIAS.ARRAY.LEN/MAX/MIN/MEDIA.path` | PASS | planned |
-| `ALIAS.ASLIST.path[].field` | PASS | planned |
-| `ALIAS.EXIST.path` | PASS | planned |
-| `ALIAS.F` (trigger), `ALIAS.T`, `ALIAS.Q`, `ALIAS.L`, `ALIAS.P` | PASS | planned |
+| `X.{ID}` | PASS | DONE |
+| `ITEM.ALIAS` | PASS | DONE |
+| `$.GPARAM.*`, `$.SYS.TIME`, `$.CONFIG.*`, `$.PARAM.*` | PASS | DONE |
+| `$.SLAVE.x.yyy` | PASS | DONE |
+| `ALIAS.VALUE.path[i].field` | PASS | DONE |
+| `ALIAS.HTTP_CODE`, `ALIAS.HTTP_DATA`, `ALIAS.URL` | PASS | DONE |
+| `ALIAS.ARRAY.LEN/MAX/MIN/MEDIA.path` | PASS | DONE |
+| `ALIAS.ASLIST.path[].field` | PASS | DONE |
+| `ALIAS.EXIST.path` | PASS | DONE |
+| `ALIAS.F` (trigger), `ALIAS.T`, `ALIAS.Q`, `ALIAS.L`, `ALIAS.P` | PASS | DONE |
 
 ## Built-in Functions
 
@@ -66,55 +66,55 @@ Sprint 0 parses all tokens; execution is Sprint 1.
 
 | Function | Sprint 0 | Sprint 1 | Source |
 |----------|:-:|:-:|--------|
-| `DATE_MONTH/YEAR/WDAY/YDAY/HOUR/MIN/SEC/DAY(time)` | PASS | planned | DeviceLib p.26 |
-| `TIME_FROM_YDAY(year, yearday)` | PASS | planned | DeviceLib p.26 |
-| `TIME_FROM_DATE(y, m, d [,h, min, sec])` | PASS | planned | DeviceLib p.26 |
-| `TIMEFROMISO8601(isostring)` | PASS | planned | DeviceLib p.26 |
-| `ISO8601(time, type)` | PASS | planned | DeviceLib p.27 |
-| `DATE(time)` | PASS | planned | Pilot DDFs |
+| `DATE_MONTH/YEAR/WDAY/YDAY/HOUR/MIN/SEC/DAY(time)` | PASS | DONE | DeviceLib p.26 |
+| `TIME_FROM_YDAY(year, yearday)` | PASS | DONE | DeviceLib p.26 |
+| `TIME_FROM_DATE(y, m, d [,h, min, sec])` | PASS | DONE | DeviceLib p.26 |
+| `TIMEFROMISO8601(isostring)` | PASS | DONE | DeviceLib p.26 |
+| `ISO8601(time, type)` | PASS | DONE | DeviceLib p.27 |
+| `DATE(time)` | PASS | DONE | Pilot DDFs |
 
 ### Math
 
 | Function | Sprint 0 | Sprint 1 | Source |
 |----------|:-:|:-:|--------|
-| `LOG(value, base)` | PASS | planned | DeviceLib p.26 |
-| `DEC(val)` / `DEC(val, div)` | PASS | planned | DeviceLib p.26 |
-| `MOD(val, div)` | PASS | planned | DeviceLib p.26 |
-| `ROUND(val)` / `ROUND(val, div)` | PASS | planned | DeviceLib p.26 |
-| `SINEFROMTIME(freq, amp, phase)` | PASS | planned | DeviceLib p.26 |
+| `LOG(value, base)` | PASS | DONE | DeviceLib p.26 |
+| `DEC(val)` / `DEC(val, div)` | PASS | DONE | DeviceLib p.26 |
+| `MOD(val, div)` | PASS | DONE | DeviceLib p.26 |
+| `ROUND(val)` / `ROUND(val, div)` | PASS | DONE | DeviceLib p.26 |
+| `SINEFROMTIME(freq, amp, phase)` | PASS | DONE | DeviceLib p.26 |
 
 ### String
 
 | Function | Sprint 0 | Sprint 1 | Source |
 |----------|:-:|:-:|--------|
-| `LEN(str)` | PASS | planned | Pilot DDFs |
-| `ISEQUAL(s1, s2 [,len])` | PASS | planned | Pilot DDFs |
-| `SUBSTRING(str, start [,len])` | PASS | planned | Pilot DDFs |
-| `CONCAT(s1, s2, ...)` | PASS | planned | Pilot DDFs |
-| `DECIMAL_TO_STRING(number)` | PASS | planned | Pilot DDFs |
-| `FLOAT_TO_STRING(number)` | PASS | planned | DeviceLib p.27 |
-| `REPLACEWITHASCII(text, search, ascii)` | PASS | planned | Pilot DDFs |
-| `STRING_TO_NUMBER(str, start, len, type)` | PASS | planned | DeviceLib p.27 |
-| `HEXSTRING_TO_NUMBER(str, start, len, type)` | PASS | planned | DeviceLib p.27 |
+| `LEN(str)` | PASS | DONE | Pilot DDFs |
+| `ISEQUAL(s1, s2 [,len])` | PASS | DONE | Pilot DDFs |
+| `SUBSTRING(str, start [,len])` | PASS | DONE | Pilot DDFs |
+| `CONCAT(s1, s2, ...)` | PASS | DONE | Pilot DDFs |
+| `DECIMAL_TO_STRING(number)` | PASS | DONE | Pilot DDFs |
+| `FLOAT_TO_STRING(number)` | PASS | DONE | DeviceLib p.27 |
+| `REPLACEWITHASCII(text, search, ascii)` | PASS | DONE | Pilot DDFs |
+| `STRING_TO_NUMBER(str, start, len, type)` | PASS | DONE | DeviceLib p.27 |
+| `HEXSTRING_TO_NUMBER(str, start, len, type)` | PASS | DONE | DeviceLib p.27 |
 
 ### System
 
 | Function | Sprint 0 | Sprint 1 | Source |
 |----------|:-:|:-:|--------|
-| `DEBUG(var1, var2, ...)` | PASS | planned | Pilot DDFs |
-| `SYSTEMINFO(xxx)` | PASS | planned | Pilot DDFs |
-| `RANDOMSTRING(len)` | PASS | planned | Pilot DDFs |
-| `SAVE_JSON(...)` | PASS | planned | Pilot DDFs |
+| `DEBUG(var1, var2, ...)` | PASS | DONE | Pilot DDFs |
+| `SYSTEMINFO(xxx)` | PASS | DONE | Pilot DDFs |
+| `RANDOMSTRING(len)` | PASS | DONE | Pilot DDFs |
+| `SAVE_JSON(...)` | PASS | DONE | Pilot DDFs |
 
 ### Advanced
 
 | Function | Sprint 0 | Sprint 1 | Source |
 |----------|:-:|:-:|--------|
-| `SETVALUE(prefix, suffix, index, value, ...)` | PASS | planned | DeviceLib p.27 |
-| `SETVALUES(prefix, suffix, index, blocks, value, ...)` | PASS | planned | DeviceLib p.27 |
-| `JSONGETVALUEFROMARRAY(...)` | PASS | planned | DeviceLib p.28 |
-| `PID(instance, soll, ist, P, I, D, N)` | PASS | planned | DeviceLib p.28 |
-| `FUNCTION(slave, target, op, source, addr, count)` | PASS | planned | DeviceLib p.10 |
+| `SETVALUE(prefix, suffix, index, value, ...)` | PASS | DONE | DeviceLib p.27 |
+| `SETVALUES(prefix, suffix, index, blocks, value, ...)` | PASS | DONE | DeviceLib p.27 |
+| `JSONGETVALUEFROMARRAY(...)` | PASS | DONE | DeviceLib p.28 |
+| `PID(instance, soll, ist, P, I, D, N)` | PASS | DONE | DeviceLib p.28 |
+| `FUNCTION(slave, target, op, source, addr, count)` | PASS | DONE | DeviceLib p.10 |
 
 ## Notes
 

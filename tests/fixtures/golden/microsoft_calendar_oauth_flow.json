@@ -1,0 +1,13 @@
+{
+  "items": {
+    "52": 1.0,
+    "170": 0.0,
+    "180": 0.0,
+    "191": "Off | Off 1.0 h",
+    "195": 1
+  },
+  "_comment": "Golden file for MS Calendar OAuth flow. Items from RFORMULA polling pass. Full HTTP-driven state requires ARGS URL building (Sprint 1 hardening).",
+  "_frozen_time": 1745571600.0,
+  "_config": {"0": "tenant-id-here", "1": "test-client-id", "2": "test-secret"},
+  "_ignore_fields": ["gparams", "debug_log", "http_requests", "steps_executed", "step_limit_reached", "side_effects"]
+}
