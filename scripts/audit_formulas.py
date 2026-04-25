@@ -41,10 +41,10 @@ def extract_formulas(ddf_path: Path) -> list[tuple[str, str]]:
 def audit_ddf(ddf_path: Path) -> dict[str, Counter[str]]:
     """Audit a DDF and return operator/function usage counts."""
     formulas = extract_formulas(ddf_path)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"DDF: {ddf_path.name}")
     print(f"Formulas found: {len(formulas)}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     keywords: Counter[str] = Counter()
     operators: Counter[str] = Counter()
@@ -54,9 +54,7 @@ def audit_ddf(ddf_path: Path) -> dict[str, Counter[str]]:
     # Regex for function calls: IDENTIFIER followed by (
     func_pattern = re.compile(r"\b([A-Z_][A-Z0-9_]*)\s*\(")
     # Regex for path access patterns
-    path_pattern = re.compile(
-        r"\$\.(SYS|GPARAM|PARAM|CONFIG|SLAVE|ITEMMASK|MOUSE|CTRLVAR)\b"
-    )
+    path_pattern = re.compile(r"\$\.(SYS|GPARAM|PARAM|CONFIG|SLAVE|ITEMMASK|MOUSE|CTRLVAR)\b")
     data_pattern = re.compile(
         r"\b(\w+)\.(VALUE|ARRAY|ASLIST|FIND|EXIST|HTTP_CODE|HTTP_DATA|URL|F|T|Q|L|P|EC|EN)\b"
     )
@@ -71,18 +69,41 @@ def audit_ddf(ddf_path: Path) -> dict[str, Counter[str]]:
 
         for tok in tokens:
             if tok.type in (
-                TokenType.IF, TokenType.THEN, TokenType.ELSE, TokenType.ENDIF,
-                TokenType.SWITCH, TokenType.CASE, TokenType.DEFAULT, TokenType.ENDSWITCH,
-                TokenType.FOR, TokenType.TO, TokenType.BY, TokenType.DO, TokenType.ENDFOR,
+                TokenType.IF,
+                TokenType.THEN,
+                TokenType.ELSE,
+                TokenType.ENDIF,
+                TokenType.SWITCH,
+                TokenType.CASE,
+                TokenType.DEFAULT,
+                TokenType.ENDSWITCH,
+                TokenType.FOR,
+                TokenType.TO,
+                TokenType.BY,
+                TokenType.DO,
+                TokenType.ENDFOR,
             ):
                 keywords[tok.value.upper()] += 1
             elif tok.type in (
-                TokenType.ASSIGN, TokenType.EQ, TokenType.NEQ,
-                TokenType.LT, TokenType.GT, TokenType.LTE, TokenType.GTE,
-                TokenType.AND, TokenType.ANDNOT, TokenType.OR,
-                TokenType.BAND, TokenType.BOR, TokenType.BANDNOT,
-                TokenType.SHR, TokenType.SHL,
-                TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH,
+                TokenType.ASSIGN,
+                TokenType.EQ,
+                TokenType.NEQ,
+                TokenType.LT,
+                TokenType.GT,
+                TokenType.LTE,
+                TokenType.GTE,
+                TokenType.AND,
+                TokenType.ANDNOT,
+                TokenType.OR,
+                TokenType.BAND,
+                TokenType.BOR,
+                TokenType.BANDNOT,
+                TokenType.SHR,
+                TokenType.SHL,
+                TokenType.PLUS,
+                TokenType.MINUS,
+                TokenType.STAR,
+                TokenType.SLASH,
                 TokenType.CARET,
             ):
                 operators[tok.value] += 1
@@ -123,9 +144,9 @@ def main() -> None:
                     print(f"    {name:30s} {count:4d}")
 
     # Combined summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("COMBINED SUMMARY — ALL DDFs")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     combined: dict[str, Counter[str]] = {
         "keywords": Counter(),

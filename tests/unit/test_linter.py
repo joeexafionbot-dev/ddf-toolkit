@@ -88,30 +88,34 @@ def test_daikin_stylish_lint_clean():
 
 
 def test_ddf001_pass():
-    ddf = _make_ddf(writes=[
-        WriteCommand(
-            alias="GETDATA",
-            method="GET",
-            url=None,
-            datatype="JSON",
-            formula="",
-            args=[ArgsDef(method=None, alias="GETDATA", type="url", name="/v1/data", value="")],
-        ),
-    ])
+    ddf = _make_ddf(
+        writes=[
+            WriteCommand(
+                alias="GETDATA",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="",
+                args=[ArgsDef(method=None, alias="GETDATA", type="url", name="/v1/data", value="")],
+            ),
+        ]
+    )
     assert DDF001().check(ddf) == []
 
 
 def test_ddf001_fail():
-    ddf = _make_ddf(writes=[
-        WriteCommand(
-            alias="GETDATA",
-            method="GET",
-            url=None,
-            datatype="JSON",
-            formula="",
-            args=[ArgsDef(method=None, alias="NONEXISTENT", type="url", name="/v1", value="")],
-        ),
-    ])
+    ddf = _make_ddf(
+        writes=[
+            WriteCommand(
+                alias="GETDATA",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="",
+                args=[ArgsDef(method=None, alias="NONEXISTENT", type="url", name="/v1", value="")],
+            ),
+        ]
+    )
     findings = DDF001().check(ddf)
     assert len(findings) == 1
     assert findings[0].code == "DDF001"
@@ -123,7 +127,13 @@ def test_ddf001_fail():
 def test_ddf002_pass():
     ddf = _make_ddf(
         writes=[
-            WriteCommand(alias="GETDATA", method="GET", url=None, datatype="JSON", formula="X.1 := GETDATA.VALUE.temp;"),
+            WriteCommand(
+                alias="GETDATA",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="X.1 := GETDATA.VALUE.temp;",
+            ),
         ],
     )
     assert DDF002().check(ddf) == []
@@ -132,7 +142,13 @@ def test_ddf002_pass():
 def test_ddf002_fail():
     ddf = _make_ddf(
         writes=[
-            WriteCommand(alias="GETDATA", method="GET", url=None, datatype="JSON", formula="X.1 := UNKNOWN.VALUE.temp;"),
+            WriteCommand(
+                alias="GETDATA",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="X.1 := UNKNOWN.VALUE.temp;",
+            ),
         ],
     )
     findings = DDF002().check(ddf)
@@ -229,8 +245,14 @@ def test_ddf006_pass():
 def test_ddf006_fail():
     ddf = _make_ddf(
         general_metadata=GeneralMetadata(
-            device="T", manufacturer="T", type="T", protocol="REST-API (DDF)",
-            model_nr="1", version_nr="1", id="0x0", min_control_version="garbage",
+            device="T",
+            manufacturer="T",
+            type="T",
+            protocol="REST-API (DDF)",
+            model_nr="1",
+            version_nr="1",
+            id="0x0",
+            min_control_version="garbage",
             timestamp="2026-01-01",
         ),
     )
@@ -243,8 +265,14 @@ def test_ddf006_empty_version():
     """Empty MIN_CONTROL_VERSION => no finding."""
     ddf = _make_ddf(
         general_metadata=GeneralMetadata(
-            device="T", manufacturer="T", type="T", protocol="REST-API (DDF)",
-            model_nr="1", version_nr="1", id="0x0", min_control_version="",
+            device="T",
+            manufacturer="T",
+            type="T",
+            protocol="REST-API (DDF)",
+            model_nr="1",
+            version_nr="1",
+            id="0x0",
+            min_control_version="",
             timestamp="2026-01-01",
         ),
     )
@@ -281,28 +309,40 @@ def test_ddf007_fail():
 
 
 def test_ddf008_pass():
-    ddf = _make_ddf(writes=[
-        WriteCommand(
-            alias="W", method="GET", url=None, datatype="JSON", formula="",
-            args=[
-                ArgsDef(method=None, alias="W", type="url", name="/path", value=""),
-                ArgsDef(method=None, alias="W", type="arg", name="param", value=""),
-            ],
-        ),
-    ])
+    ddf = _make_ddf(
+        writes=[
+            WriteCommand(
+                alias="W",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="",
+                args=[
+                    ArgsDef(method=None, alias="W", type="url", name="/path", value=""),
+                    ArgsDef(method=None, alias="W", type="arg", name="param", value=""),
+                ],
+            ),
+        ]
+    )
     assert DDF008().check(ddf) == []
 
 
 def test_ddf008_fail():
-    ddf = _make_ddf(writes=[
-        WriteCommand(
-            alias="W", method="GET", url=None, datatype="JSON", formula="",
-            args=[
-                ArgsDef(method=None, alias="W", type="url", name="/path", value=""),
-                ArgsDef(method=None, alias="W", type="url", name="/path", value="x"),
-            ],
-        ),
-    ])
+    ddf = _make_ddf(
+        writes=[
+            WriteCommand(
+                alias="W",
+                method="GET",
+                url=None,
+                datatype="JSON",
+                formula="",
+                args=[
+                    ArgsDef(method=None, alias="W", type="url", name="/path", value=""),
+                    ArgsDef(method=None, alias="W", type="url", name="/path", value="x"),
+                ],
+            ),
+        ]
+    )
     findings = DDF008().check(ddf)
     assert len(findings) == 1
     assert findings[0].code == "DDF008"

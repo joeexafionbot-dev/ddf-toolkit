@@ -136,18 +136,13 @@ class DDF003:
                 referenced_ids.add(int(match.group(1)))
 
         for item in ddf.items:
-            if (
-                item.id not in referenced_ids
-                and not item.wformula
-                and not item.rformula
-            ):
+            if item.id not in referenced_ids and not item.wformula and not item.rformula:
                 findings.append(
                     Finding(
                         code=self.code,
                         severity="warning",
                         message=(
-                            f"Item '{item.alias}' (ID {item.id}) "
-                            f"is declared but never referenced"
+                            f"Item '{item.alias}' (ID {item.id}) is declared but never referenced"
                         ),
                     )
                 )
@@ -286,9 +281,7 @@ class DDF009:
 
         config_aliases = {c.alias.upper() for c in ddf.config}
         # For PASSWORD auth, we need credential config fields or GENERAL params
-        has_password = "PASSWORD" in config_aliases or ddf.general_params.extra.get(
-            "PASSWORD", ""
-        )
+        has_password = "PASSWORD" in config_aliases or ddf.general_params.extra.get("PASSWORD", "")
         if not has_password and auth == "PASSWORD":
             return [
                 Finding(
