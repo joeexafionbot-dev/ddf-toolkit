@@ -69,7 +69,7 @@ def _make_ddf(**kwargs: object) -> DDF:
 
 
 def test_microsoft_calendar_lint_clean():
-    path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+    path = FIXTURES / "microsoft_calendar.csv"
     ddf = parse_ddf(path)
     findings = lint_ddf(ddf)
     errors = [f for f in findings if f.severity == "error"]
@@ -77,7 +77,7 @@ def test_microsoft_calendar_lint_clean():
 
 
 def test_daikin_stylish_lint_clean():
-    path = FIXTURES / "Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+    path = FIXTURES / "daikin_stylish.csv"
     ddf = parse_ddf(path)
     findings = lint_ddf(ddf)
     errors = [f for f in findings if f.severity == "error"]

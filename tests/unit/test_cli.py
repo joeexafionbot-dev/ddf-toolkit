@@ -8,7 +8,7 @@ from ddf_toolkit.cli import app
 
 runner = CliRunner()
 
-MS_CAL = "tests/fixtures/ddfs/Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+MS_CAL = "tests/fixtures/ddfs/microsoft_calendar.csv"
 
 
 def test_help():

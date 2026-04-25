@@ -25,7 +25,7 @@ def key_dir(tmp_path):
 @pytest.fixture()
 def ddf_copy(tmp_path):
     """Copy the MS Calendar DDF to a temp directory."""
-    src = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+    src = FIXTURES / "microsoft_calendar.csv"
     dst = tmp_path / "calendar.csv"
     shutil.copy(src, dst)
     return dst
@@ -79,7 +79,7 @@ def test_sign_with_missing_test_key_raises(tmp_path, monkeypatch):
 def test_roundtrip_daikin(key_dir, tmp_path):
     """Sign and verify the Daikin DDF."""
     priv, pub = key_dir
-    src = FIXTURES / "Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+    src = FIXTURES / "daikin_stylish.csv"
     ddf_copy = tmp_path / "daikin.csv"
     shutil.copy(src, ddf_copy)
     signed_path = tmp_path / "daikin_signed.csv"

@@ -43,7 +43,7 @@ def test_string_literal():
 
 def test_formula_size_limit():
     with pytest.raises(ValueError, match="exceeds"):
-        tokenize("X" * 5000)
+        tokenize("X" * 70000)  # 64KB limit
 
 
 def test_arithmetic():

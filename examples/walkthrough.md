@@ -18,27 +18,27 @@ pip install -e .
 
 ```bash
 # Pretty-print the AST as YAML
-ddf parse tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+ddf parse tests/fixtures/ddfs/microsoft_calendar.csv
 
 # Or as JSON
-ddf parse tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv" --json
+ddf parse tests/fixtures/ddfs/microsoft_calendar.csv --json
 ```
 
 ## 2. Validate
 
 ```bash
-ddf validate tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+ddf validate tests/fixtures/ddfs/microsoft_calendar.csv
 # Expected: PASS
 ```
 
 ## 3. Lint
 
 ```bash
-ddf lint tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+ddf lint tests/fixtures/ddfs/microsoft_calendar.csv
 # Expected: PASS — no findings
 
 # Machine-readable output for CI
-ddf lint tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv" --format json
+ddf lint tests/fixtures/ddfs/microsoft_calendar.csv --format json
 ```
 
 ## 4. Sign with a Test Key
@@ -48,7 +48,7 @@ ddf lint tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00
 ddf keygen --test
 
 # Sign the DDF
-ddf sign --test tests/fixtures/ddfs/"Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv" -o /tmp/signed.csv
+ddf sign --test tests/fixtures/ddfs/microsoft_calendar.csv -o /tmp/signed.csv
 
 # Verify the signature
 ddf verify /tmp/signed.csv
