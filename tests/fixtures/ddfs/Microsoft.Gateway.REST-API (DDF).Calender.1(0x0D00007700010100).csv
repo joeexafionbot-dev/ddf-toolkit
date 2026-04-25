@@ -1,0 +1,270 @@
+*SIGNATURE
+;SIGN_ALGO;ECDSA-SHA384;;
+;SIGN_DATE;2026-04-25 16:45:25;;
+;FILE_VERDATE;21d3c8eb 2026-02-26 09:46:39;;
+;SIGNATURE;MGQCMDjbScMq2r94/U9SeFwvldIwogTzvDSka7TyI8Le0PaX3BtvVoHS+86YlA0qXtzkOwIwJ0CgVH1v/UZ3yjUhTZr07oUozFVTJx7rwbzBsUVWVzQzNyRlY3p60S41zKMZsKGt;;
+*GENERAL;;;;;;;;;;;;;;;;;;;;;;;
+;DEVICE;Calender;;
+;MANUFACTURER;Microsoft;;
+;TYPE;Gateway;;
+;PROTOCOL;REST-API (DDF);;
+;MODEL_NR;1;;
+;VERSION_NR;1;;
+;ID;0x0D00007700010100;;
+;MIN_CONTROL_VERSION;V9615-08;;
+;TIMESTAMP;2026-03-18 13:51:50;
+*GENERAL;;;;;;;;;;;;;;;;;;;;;;;
+;CONNECTION;DEFDOMAIN;;;;;;;;;;;;;;;;;;;;;
+;AUTHENTIFICATION;NONE;;;;;;;;;;;;;;;;;;;;;
+;DOMAIN;https://graph.microsoft.com;;http://192.168.1.65:8080;;;;;;;;;;;;;;;;;;;
+;SLAVESMAX;30;;;;;;;;;;;;;;;;;;;;;
+;SCOPE;https://graph.microsoft.com/.default;;;;;;;;;;;;;;;;;;;;;
+;ACCESSTOKEN;;;;;;;;;;;;;;;;;;;;;;
+;EXPIRESIN;;;;;;;;;;;;;;;;;;;;;;
+;TOKENTYPE;;;;;;;;;;;;;;;;;;;;;;
+;EXPIRESDATE;;;;;;;;;;;;;;;;;;;;;;
+;VERBOSE;;;;;;;;;;;;;;;;;;;;;;
+;DEBUGPORT;8500;;;;;;;;;;;;;;;;;;;;;
+;VERSION_INFO;;
+;VERSION_USER;hw;
+;REVISION;21d3c8eb 2026-02-26 09:46:39;;
+*COMMAND;ID;ALIAS;FORMULA;;;;;;;;;;;;;;;;;;;;
+;0;GETTOKEN;"""GETTOKEN.F := 1;""";;;;;;;;;;;;;;;;;;;;
+;1;GETSLAVESROOMS;"""GETSLAVESROOMS.F := 1;""";;;;;;;;;;;;;;;;;;;;
+;2;VERBOSE_ON_OFF;"""IF ISEQUAL($.GPARAM.VERBOSE,'ON') THEN
+    $.GPARAM.VERBOSE := 'OFF';
+ELSE
+    $.GPARAM.VERBOSE := 'ON';
+ENDIF;
+DEBUG($.GPARAM.VERBOSE);""";;;;;;;;;;;;;;;;;;;;
+*CONFIG;ID;ALIAS;;;;;;;;;;;;;;;;;;;;;
+;0;TENANTID;;;;;;;;;;;;;;;;;;;;;
+;1;CLIENTID;;;;;;;;;;;;;;;;;;;;;
+;2;SECRET;;;;;;;;;;;;;;;;;;;;;
+*READ;ALIAS;METHOD;URL;DATATYPE;POLLING;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;
+*WRITE;ALIAS;METHOD;URL;DATATYPE;FORMULA;;;;;;;;;;;;;;;;;;
+;GETTOKEN;POST;https://login.microsoftonline.com;X-WWW-FORM-URLENCODED;"""IF (GETTOKEN.HTTP_CODE==200) && ISEQUAL(GETTOKEN.VALUE.token_type,'Bearer') THEN
+    X.192 := 'Token received';
+    X.201 := 1;
+    $.GPARAM.TOKENTYPE := GETTOKEN.VALUE.token_type;
+    $.GPARAM.EXPIRESIN := GETTOKEN.VALUE.expires_in;
+    $.GPARAM.ACCESSTOKEN := GETTOKEN.VALUE.access_token;
+    $.GPARAM.EXPIRESDATE := ( ( $.GPARAM.EXPIRESIN * 5 ) / 6 ) + $.SYS.TIME;
+ELSE
+    $.GPARAM.EXPIRESDATE := 60 + $.SYS.TIME;
+    X.192 := GETTOKEN.VALUE.error;
+    X.201 := 0;
+ENDIF;
+IF ( LEN(X.192) == 0 ) THEN
+    X.192 := 'Token Error';
+ENDIF;
+IF ISEQUAL($.GPARAM.VERBOSE,'ON') THEN
+    DEBUG(GETTOKEN.URL);
+    DEBUG(GETTOKEN.HTTP_CODE);
+    DEBUG(GETTOKEN.HTTP_DATA);
+ENDIF;
+MSG_INFO_TIME := $.SYS.TIME;
+GETTOKEN.F := 0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;url;/;;$.CONFIG.0;STRING;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;url;/oauth2/v2.0/token;;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;data;client_id;;$.CONFIG.1;STRING;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;data;client_secret;;$.CONFIG.2;STRING;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;data;scope;;$.GPARAM.SCOPE;STRING;;;;;;;;;;;;;;;
+;ARGS;GETTOKEN;;data;grant_type;client_credentials;;STRING;;;;;;;;;;;;;;;
+;GETSLAVESROOMS;GET;;JSON;"""IF GETSLAVESROOMS.HTTP_CODE == 200  THEN
+    X.192 := 'Slaves received';
+    $.GPARAM.SLAVELIST:=GETSLAVESROOMS.ASLIST.value[].emailAddress;
+    X.200 := 1;
+ELSE
+    X.192 := GETSLAVESROOMS.VALUE.error.code;
+    X.200 := 0;
+ENDIF;
+IF ( LEN(X.192) == 0 ) THEN
+    X.192 := 'Slaves Error';
+ENDIF;
+IF ISEQUAL($.GPARAM.VERBOSE,'ON') THEN
+    DEBUG(GETSLAVESROOMS.URL);
+    DEBUG(GETSLAVESROOMS.HTTP_CODE);
+    DEBUG(GETSLAVESROOMS.HTTP_DATA);
+ENDIF;
+MSG_INFO_TIME := $.SYS.TIME;
+GETSLAVESROOMS.F := 0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETSLAVESROOMS;;url;/v1.0/places/microsoft.graph.room;;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETSLAVESROOMS;;arg;$select;emailAddress;;;;;;;;;;;;;;;;;
+;ARGS;GETSLAVESROOMS;;header;Accept;application/json;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETSLAVESROOMS;;header;Authorization;;$.GPARAM.ACCESSTOKEN;Bearer %s;;;;;;;;;;;;;;;
+;GETCURRENTVIEW;GET;;JSON;"""IF GETCURRENTVIEW.HTTP_CODE == 200  THEN
+    X.190 := 'Current received';
+    X.200 := 1;
+    COUNT := GETCURRENTVIEW.ARRAY.LEN.value;
+ELSE
+    X.190 := GETCURRENTVIEW.VALUE.error.code;
+    X.200 := 0;
+ENDIF;
+IF ( LEN(X.190) == 0 ) THEN
+    X.190 := 'Current Error';
+ENDIF;
+IF ( GETCURRENTVIEW.HTTP_CODE == 200 ) && COUNT THEN
+    X.50 := 1;  X.60 := 0;
+ELSE
+    X.50 := 0;  X.60 := 1;
+ENDIF;
+IF ISEQUAL($.GPARAM.VERBOSE,'ON') THEN
+    DEBUG(GETCURRENTVIEW.URL);
+    DEBUG(GETCURRENTVIEW.HTTP_CODE);
+    DEBUG(GETCURRENTVIEW.HTTP_DATA);
+ENDIF;
+EVENTREFRESHDATE := DEC($.SYS.TIME, 300) * 300 + 310;
+EVENTREFRESHDATE_STR := DATE(EVENTREFRESHDATE);
+X.181 := SUBSTRING(EVENTREFRESHDATE_STR,11,8);
+MSG_TIME := $.SYS.TIME;
+GETCURRENTVIEW.F := 0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;url;/v1.0/users/;;$SLAVE;STRING;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;url;/calendarView;;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;startdatetime;;TIME_NOW;ISO8601;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;enddatetime;;TIME_NOW;ISO8601;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;$select;subject,start,end;;;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;$count;true;;;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;$filter;isCancelled eq false;;;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;arg;$top;1;;;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;header;Accept;application/json;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;header;Prefer;;TZONE;outlook.timezone=%s;;;;;;;;;;;;;;;
+;ARGS;GETCURRENTVIEW;;header;Authorization;;$.GPARAM.ACCESSTOKEN;Bearer %s;;;;;;;;;;;;;;;
+;GETFUTUREVIEW;GET;;JSON;"""IF GETFUTUREVIEW.HTTP_CODE == 200 THEN
+    X.190 := 'Upcoming received';
+    X.200 := 1;
+    X.0 := GETFUTUREVIEW.ARRAY.LEN.value;
+    X.1 := GETFUTUREVIEW.VALUE.value[0].subject;
+    X.2 := GETFUTUREVIEW.VALUE.value[0].start.dateTime;
+    X.3 := GETFUTUREVIEW.VALUE.value[0].end.dateTime;
+    X.4 := GETFUTUREVIEW.VALUE.value[0].end.timeZone;
+ELSE
+    X.190 := GETFUTUREVIEW.VALUE.error.code;
+    X.200 := 0;
+ENDIF;
+IF ( LEN(X.190) == 0 ) THEN
+    X.190 := 'Future Error';
+ENDIF;
+IF ( GETFUTUREVIEW.HTTP_CODE == 200 ) && X.0 THEN
+    X.51 := 1;  X.61 := 0;
+    DAY_TMP  := SUBSTRING(X.2,8,2);
+    MONTH_TMP := SUBSTRING(X.2,5,2);
+    YEAR_TMP := SUBSTRING(X.2,0,4);
+    TIME_TMP := SUBSTRING(X.2,11,8);
+    X.22 := CONCAT(DAY_TMP,'.',MONTH_TMP,'.',YEAR_TMP,' - ', TIME_TMP);
+    DAY_TMP  := SUBSTRING(X.3,8,2);
+    MONTH_TMP := SUBSTRING(X.3,5,2);
+    YEAR_TMP := SUBSTRING(X.3,0,4);
+    TIME_TMP := SUBSTRING(X.3,11,8);
+    X.23 := CONCAT(DAY_TMP,'.',MONTH_TMP,'.',YEAR_TMP,' - ', TIME_TMP);
+ELSE
+    X.22 := '';
+    X.23 := '';
+    X.51 := 0;  X.61 := 1;
+ENDIF;
+IF ISEQUAL($.GPARAM.VERBOSE,'ON') THEN
+    DEBUG(GETFUTUREVIEW.URL);
+    DEBUG(GETFUTUREVIEW.HTTP_CODE);
+    DEBUG(GETFUTUREVIEW.HTTP_DATA);
+ENDIF;
+MSG_TIME := $.SYS.TIME;
+GETFUTUREVIEW.F := 0;""";;;;;;;;;;;;;;;;;;
+;*ARGS;METHOD;ALIAS;TYPE;NAME;VALUE;ITEM;FORMAT;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;url;/v1.0/users/;;$SLAVE;STRING;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;url;/calendarView;;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;startdatetime;;TIME_NOW;ISO8601;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;enddatetime;;TIME_FUTURE;ISO8601;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;$select;subject,start,end;;;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;$count;true;;;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;$filter;isCancelled eq false;;;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;$top;1;;;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;arg;$orderby;start/dateTime asc;;;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;header;Accept;application/json;;STRING;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;header;Prefer;;TZONE;outlook.timezone=%s;;;;;;;;;;;;;;;
+;ARGS;GETFUTUREVIEW;;header;Authorization;;$.GPARAM.ACCESSTOKEN;Bearer %s;;;;;;;;;;;;;;;
+*GROUP;ID;ALIAS;NAME;;;;;;;;;;;;;;;;;;;;
+;0;EVENT;Event;;;;;;;;;;;;;;;;;;;;
+;1;INFO;Info;;;;;;;;;;;;;;;;;;;;
+*ITEM;ALIAS;NAME;ID;VISIBILITY;UNIT;TYPE;DEFAULT;WFORMULA;RFORMULA;POLLING;COMMENT;;;;;;;;;;;;
+;COUNT;Count;0;;;;;;"""TZONE_TMP := '$ANFEurope/Berlin$ANF';
+TZONE :=REPLACEWITHASCII(TZONE_TMP,'$ANF',34);""";100000;;;;;;;;;;;;;
+;SUBJECT;Subject;1;;;;;;"""IF ( MSG_TIME + 3 - $.SYS.TIME ) <= 0 THEN
+    X.190 := '';
+ENDIF;""
+IF ( MSG_INFO_TIME + 10 - $.SYS.TIME ) <= 0 THEN
+    X.192 := '';
+ENDIF;""";500;;;;;;;;;;;;;
+;START_DATETIME;Start DateTime;2;;YYYY-MM-DDTHH:MM:SS.sssssss;;;;;;;;;;;;;;;;;;
+;END_DATETIME;End DateTime;3;;YYYY-MM-DDTHH:MM:SS.sssssss;;;;;;;;;;;;;;;;;;
+;END_TIME ZONE;End Time Zone;4;;;;;;;;;;;;;;;;;;;;
+;START_DATETIME_EU;Start DateTime (EU);22;;DD.MM.YYYY - HH:MM:SS;;;;;;;;;;;;;;;;;;
+;END_DATETIME_EU;End DateTime (EU);23;;DD.MM.YYYY - HH:MM:SS;;;;;;;;;;;;;;;;;;
+;EVENT_NOW_ACTIVE;Event Now Active;50;;1 = now active;;;;;;;;;;;;;;;;;;
+;EVENT_UPCOMING;Event Upcoming;51;;1 = events upcoming;;;;;;;;;;;;;;;;;;
+;LOOK_AHEAD_TIME;Look-Ahead Time;52;;h;;6;"""IF X.52 <= 1 THEN X.52 := 1; ENDIF;""";"""IF X.52 <= 1 THEN X.52 := 1; ENDIF;""";1000;;;;;;;;;;;;;
+;EVENT_NOW_ACTIVE_INV;Event Now Active (Inv);60;;0 = now active;;1;;;;;;;;;;;;;;;;
+;EVENT_UPCOMING_INV;Event Upcoming (Inv);61;;0 = events upcoming;;1;;;;;;;;;;;;;;;;
+;COMMAND_TOKEN_NOW;Command Token Now;160;;;;;"""IF X.160 THEN
+    $.GPARAM.EXPIRESDATE := 10;
+ENDIF;""";;;;;;;;;;;;;;;
+;COMMAND_VERBOSE;Command Verbose;161;;;;;"""IF X.161 THEN
+    $.GPARAM.VERBOSE := 'ON';
+ELSE
+    $.GPARAM.VERBOSE := 'OFF';
+ENDIF;
+DEBUG($.GPARAM.VERBOSE);""";;;;;;;;;;;;;;;
+;COMMAND_EVENT_REFRESH_NOW;Command Event Refresh Now;162;;;;;"""IF X.162 THEN
+    EVENTREFRESHDATE := 0;
+ENDIF;""";;;;;;;;;;;;;;;
+;EVENT_REFRESH_TIMER;Event Refresh Timer;170;;s;;;;"""IF FORCE_FUTURE_NEXT THEN
+    GETFUTUREVIEW.F := 1;
+    FORCE_FUTURE_NEXT := 0;
+ENDIF;
+X.170 := EVENTREFRESHDATE - $.SYS.TIME;
+IF X.170 <= 0 THEN X.170 :=0; ENDIF;
+IF X.195 && ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) && (X.170 == 0) THEN
+    TIME_NOW := $.SYS.TIME;
+    TIME_FUTURE := TIME_NOW + ( X.52 * 60 * 60 );
+    GETCURRENTVIEW.F := 1;
+    FORCE_FUTURE_NEXT := 1;
+    DEBUG_INFO := 'Event Request'; DEBUG(DEBUG_INFO);
+ENDIF;""";1000;;;;;;;;;;;;;
+;TOKEN_REFRESH_TIMER;Token Refresh Timer;180;;s;;;;"""X.180 := $.GPARAM.EXPIRESDATE - $.SYS.TIME;
+IF X.180 <= 0 THEN X.180 :=0; ENDIF;
+IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.180 == 0) THEN
+    GETTOKEN.F :=1;
+    DEBUG_INFO := 'Token Request'; DEBUG(DEBUG_INFO);
+ENDIF;""";1000;;;;;;;;;;;;;
+;EVENT_UPDATE_TIME;Event Update Time;181;;HH:MM:SS;;;;;;;;;;;;;;;;;;
+;MESSAGE;Message;190;;;;;;;;;;;;;;;;;;;;
+;MESSAGE_TRIGGER;Message Trigger;191;;;;;;"""IF X.50 THEN TR_MSG_NOW := 'On'; ELSE TR_MSG_NOW := 'Off'; ENDIF;
+IF X.51 THEN TR_MSG_UP := 'On'; ELSE TR_MSG_UP := 'Off'; ENDIF;
+STRNB := DECIMAL_TO_STRING(X.52);
+X.191 := CONCAT(TR_MSG_NOW,' | ',TR_MSG_UP,' ',STRNB,' h');""";1000;;;;;;;;;;;;;
+;MESSAGE_INFO;Message Info;192;;;;;;;;;;;;;;;;;;;;
+;STATION_CONFIG_DONE;Station Config Done;195;;1 = config done;;;;"""X.195 := ( LEN($.CONFIG.0) > 0 ) && ( LEN($.CONFIG.1) > 0 ) && ( LEN($.CONFIG.2) > 0 );""";1000;;;;;;;;;;;;;
+#;EVENT_REFRESH_TIME;Event Refresh Time;196;;s;;360;"""IF X.196 < 200 THEN X.196 := 200; ENDIF;""";"""IF X.196 < 200 THEN X.196 := 200; ENDIF;""";1000;;;;;;;;;;;;;
+;QUALITY;Quality Event;200;;;;1;;;;;;;;;;;;;;;;
+;QUALITY_TOKEN;Quality Token;201;;;;1;;;;;;;;;;;;;;;;
+*OBJECT;GROUP;ID;ALIAS;TYPE;ENUM;ENUMTEXT;ENUMVAL;MIN;MAX;IOTYPE;DIGITS;ITEMID;UNIT;ALARM;ALARMVAL;ALARMTIME;OUTTYPE;CMDITEMID;COMMAND;COMMANDENUM;COMMANDVAL;VIEWTYPE;LOG
+;0;0;Refresh;4;;;;;;;;170;s;;;;;162;1;Now;1;0;0
+;0;1;Info;3;;;;;;;;190;;;;;;;;;;0;1
+;0;2;;3;;;;;;;;1;;;;;;;;;;0;1
+;0;3;Start;3;;;;;;;;22;;;;;;;;;;0;1
+;0;4;End;3;;;;;;;;23;;;;;;;;;;0;1
+;0;5;Trigger;3;;;;;;;;191;;;;;;;;;;0;1
+;0;6;Data Reception;1;2;Error,Ok;0,1;;;;;200;;<=;0;660;;;;;;0;1
+;0;7;Look-ahead Time;104;;;;1;72;;;52;h;;;;;;;;;0;0
+#;0;8;Event Refresh;104;;;;30;10000;;;196;s;;;;;;;;;0;0
+;0;9;Event Now Active;1;2;Off,On;0,1;;;;;50;;;;;;;;;;1;1
+;0;10;Event Upcoming;1;2;Off,On;0,1;;;;;51;;;;;;;;;;1;1
+;0;11;Time Zone;3;;;;;;;;4;;;;;;;;;;1;1
+;1;0;Token Refresh;4;;;;;;;;180;s;;;;;160;1;Now;1;0;0
+;1;1;Info;3;;;;;;;;192;;;;;;;;;;0;1
+;1;2;Token Reception;1;2;Error,Ok;0,1;;;;;201;;<=;0;140;;;;;;0;1
+;1;3;Next Refresh;3;;;;;;;;181;;;;;;;;;;0;1
+;1;4;Debug Verbose;1;;;;;;;;;;;;;;161;2;Off,On;0,1;0;1
