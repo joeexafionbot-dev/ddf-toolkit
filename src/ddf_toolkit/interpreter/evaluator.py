@@ -144,7 +144,7 @@ class Interpreter:
     def _eval_index(self, expr: IndexAccess) -> Any:
         target = self._eval(expr.target)
         index = self._eval(expr.index)
-        if isinstance(target, (list, dict)):
+        if isinstance(target, list | dict):
             try:
                 if isinstance(target, list):
                     return target[int(index)]
@@ -384,7 +384,7 @@ class Interpreter:
         """Coerce a value to a number."""
         if val is None:
             return 0.0
-        if isinstance(val, (int, float)):
+        if isinstance(val, int | float):
             return float(val)
         if isinstance(val, str):
             try:
@@ -400,7 +400,7 @@ class Interpreter:
         """DDF truthiness: 0, empty string, None, False are falsy."""
         if val is None:
             return False
-        if isinstance(val, (int, float)):
+        if isinstance(val, int | float):
             return val != 0
         if isinstance(val, str):
             return len(val) > 0
