@@ -222,10 +222,56 @@ def simulate(
     file: Annotated[Path, typer.Argument(help="DDF CSV file.")],
     capture: Annotated[Path, typer.Option("--capture", help="HAR capture file.")],
     golden: Annotated[Path | None, typer.Option("--golden", help="Expected output JSON.")] = None,
+    step_limit: Annotated[int, typer.Option("--step-limit", help="Max trigger-flag cycles.")] = 100,
+    freeze_time: Annotated[
+        str | None,
+        typer.Option("--freeze-time", help="Frozen epoch time (float or ISO)."),
+    ] = None,
+    fmt: Annotated[
+        str | None,
+        typer.Option("--format", "-f", help="Output format: json or text."),
+    ] = None,
 ) -> None:
-    """Run a DDF against captured traffic (not yet implemented)."""
-    _error("Simulation is not yet implemented (Sprint 1).")
-    raise typer.Exit(code=3)
+    """Run a DDF against captured HAR traffic."""
+    from ddf_toolkit.parser import parse_ddf
+    from ddf_toolkit.simulator.har_loader import HARLoader
+    from ddf_toolkit.simulator.runner import run_simulation
+
+    _verbose_msg(f"Simulating {file} against {capture}")
+    try:
+        ddf = parse_ddf(file)
+        loader = HARLoader.from_file(capture)
+    except Exception as e:
+        _error(f"Load error: {e}")
+        raise typer.Exit(code=3) from e
+
+    frozen = float(freeze_time) if freeze_time else None
+    result = run_simulation(ddf, loader, step_limit=step_limit, frozen_time=frozen)
+
+    if fmt == "json":
+        _console.print(result.to_json())
+    else:
+        _info(f"Steps: {result.steps_executed}")
+        _info(f"Items set: {len(result.items)}")
+        if result.step_limit_reached:
+            _warning("Step limit reached!")
+
+    if golden:
+        from ddf_toolkit.golden.runner import run_golden_test
+
+        gr = run_golden_test(
+            ddf_path=file,
+            capture_path=capture,
+            golden_path=golden,
+            frozen_time=frozen,
+        )
+        if gr.passed:
+            _success("Golden: PASS")
+        else:
+            _error("Golden: FAIL")
+            for d in gr.diffs[:10]:
+                _error(f"  {d.path}: expected={d.expected!r}, got={d.actual!r}")
+            raise typer.Exit(code=1)
 
 
 @app.command()

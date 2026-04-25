@@ -48,6 +48,12 @@ jobs:
           ddf lint tests/fixtures/ddfs/microsoft_calendar.csv
           ddf lint tests/fixtures/ddfs/daikin_stylish.csv
 
+      - name: Smoke test — simulate pilot DDF
+        run: |
+          ddf simulate tests/fixtures/ddfs/microsoft_calendar.csv \
+            --capture tests/fixtures/captures/microsoft_calendar_oauth_flow.har \
+            --freeze-time 1745571600.0
+
       - name: Build wheel and sdist
         run: python -m build
 

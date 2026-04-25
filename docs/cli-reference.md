@@ -48,7 +48,24 @@ ddf formula "IF X.50 THEN X.60 := 0; ENDIF;"
 
 ### `ddf simulate <file.csv> --capture <recording.har>`
 
-Run a DDF against captured traffic. **Not yet implemented (Sprint 1).**
+Run a DDF against captured HAR traffic.
+
+```bash
+# Basic simulation
+ddf simulate device.csv --capture traffic.har
+
+# With golden-file comparison
+ddf simulate device.csv --capture traffic.har --golden expected.json
+
+# With frozen time (deterministic)
+ddf simulate device.csv --capture traffic.har --freeze-time 1745571600.0
+
+# Limit trigger-flag cycles
+ddf simulate device.csv --capture traffic.har --step-limit 50
+
+# JSON output
+ddf simulate device.csv --capture traffic.har --format json
+```
 
 ### `ddf sign <file.csv>`
 

@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] — 2026-04-25
+
+Sprint 1 release — interpreter + simulator.
+
+### Added
+- **Interpreter**: Tree-walking DDF script evaluator
+  - All pilot-DDF operators: arithmetic, comparison, logical (&&), string, date/time, math
+  - Environment abstraction with $.GPARAM, $.SYS, $.CONFIG, $.PARAM, X.n state
+  - Side-effect capture: DEBUG, SAVE_JSON, RANDOMSTRING, SYSTEMINFO
+  - Sandboxing: step limit, timeout, string cap
+- **Formula Parser**: Complete rebuild — recursive-descent with typed AST
+  - AST nodes: AssignStmt, IfStmt, ElseIfClause, BinaryOp, FunctionCall, PathAccess
+  - Operator precedence, ELSE IF cascade support
+- **Simulator**: HAR-based simulation runner
+  - HAR 1.2 loader with exact and relaxed URL matching
+  - Trigger-flag state machine (RFORMULA → .F flag → *WRITE → response formula)
+  - SimulationResult with items, gparams, HTTP log, debug log
+- **Golden Harness**: Compare simulation results against expected output
+  - Field-level diffs with path reporting
+  - Filesystem-based fixture discovery
+  - Ignore-fields support for non-deterministic data
+- **6 synthetic HAR fixtures**: 3 Microsoft Calendar + 3 Daikin Stylish
+- **CLI**: `ddf simulate` now functional (was stub in v0.1.0)
+- **Docs**: interpreter.md, simulator.md, captures-research.md
+- **Claude Code Review**: GitHub Action for supplementary AI PR review
+
 ## [0.1.0] — 2026-04-25
 
 Sprint 0 release — foundational DDF toolkit.
