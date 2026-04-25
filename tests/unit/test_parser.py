@@ -16,7 +16,7 @@ class TestParserMicrosoftCalendar:
 
     @pytest.fixture()
     def ddf(self):
-        path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+        path = FIXTURES / "microsoft_calendar.csv"
         return parse_ddf(path)
 
     def test_general_metadata(self, ddf):
@@ -79,7 +79,7 @@ class TestParserDaikinStylish:
 
     @pytest.fixture()
     def ddf(self):
-        path = FIXTURES / "Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+        path = FIXTURES / "daikin_stylish.csv"
         return parse_ddf(path)
 
     def test_general_metadata(self, ddf):
@@ -110,7 +110,7 @@ class TestParserDaikinStylish:
 
 class TestParserToJson:
     def test_to_json_roundtrip(self):
-        path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+        path = FIXTURES / "microsoft_calendar.csv"
         ddf = parse_ddf(path)
         json_str = ddf.to_json()
         assert '"device": "Calender"' in json_str
@@ -118,7 +118,7 @@ class TestParserToJson:
 
 class TestParserToYaml:
     def test_to_yaml_roundtrip(self):
-        path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+        path = FIXTURES / "microsoft_calendar.csv"
         ddf = parse_ddf(path)
         yaml_str = ddf.to_yaml()
         assert "device: Calender" in yaml_str

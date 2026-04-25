@@ -10,7 +10,7 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "ddfs"
 
 
 def test_lex_microsoft_calendar():
-    path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+    path = FIXTURES / "microsoft_calendar.csv"
     rows = lex_ddf(path)
     assert len(rows) > 0
     sections = {r.section for r in rows}
@@ -21,7 +21,7 @@ def test_lex_microsoft_calendar():
 
 
 def test_lex_daikin_stylish():
-    path = FIXTURES / "Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+    path = FIXTURES / "daikin_stylish.csv"
     rows = lex_ddf(path)
     assert len(rows) > 0
     sections = {r.section for r in rows}
@@ -30,7 +30,7 @@ def test_lex_daikin_stylish():
 
 
 def test_comment_lines_skipped():
-    path = FIXTURES / "Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
+    path = FIXTURES / "microsoft_calendar.csv"
     rows = lex_ddf(path)
     # No row should start with #
     for row in rows:

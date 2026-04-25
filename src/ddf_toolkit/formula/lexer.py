@@ -90,7 +90,7 @@ KEYWORDS = {
     "ENDFOR": TokenType.ENDFOR,
 }
 
-MAX_FORMULA_SIZE = 4096  # 4 KB cap per PRD §6.3
+MAX_FORMULA_SIZE = 65536  # 64 KB — raised from 4KB per Sprint 1 Amendment §2
 
 
 def tokenize(source: str) -> list[Token]:

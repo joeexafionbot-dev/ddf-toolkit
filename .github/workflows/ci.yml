@@ -40,13 +40,13 @@ jobs:
 
       - name: Smoke test — validate pilot DDFs
         run: |
-          ddf validate "tests/fixtures/ddfs/Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
-          ddf validate "tests/fixtures/ddfs/Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+          ddf validate tests/fixtures/ddfs/microsoft_calendar.csv
+          ddf validate tests/fixtures/ddfs/daikin_stylish.csv
 
       - name: Smoke test — lint pilot DDFs
         run: |
-          ddf lint "tests/fixtures/ddfs/Microsoft.Gateway.REST-API (DDF).Calender.1(0x0D00007700010100).csv"
-          ddf lint "tests/fixtures/ddfs/Daikin.Air conditioner.REST-API (DDF).Stylish.1(0x0D00000D00010100).csv"
+          ddf lint tests/fixtures/ddfs/microsoft_calendar.csv
+          ddf lint tests/fixtures/ddfs/daikin_stylish.csv
 
       - name: Build wheel and sdist
         run: python -m build

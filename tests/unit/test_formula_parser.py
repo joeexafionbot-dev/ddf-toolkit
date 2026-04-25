@@ -20,7 +20,7 @@ def test_parse_complex_if():
 
 
 def test_parse_oversized_formula():
-    ast = parse_formula("X" * 5000)
+    ast = parse_formula("X" * 70000)  # 64KB limit
     assert not ast.valid
     assert "exceeds" in (ast.error or "")
 

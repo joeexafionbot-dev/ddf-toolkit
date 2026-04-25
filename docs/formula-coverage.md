@@ -26,16 +26,17 @@ Sprint 0 parses all tokens; execution is Sprint 1.
 
 ## Logical / Bitwise
 
-| Operator | Meaning | Sprint 0 (Parse) | Sprint 1 (Execute) |
-|----------|---------|:-:|:-:|
-| `&&` | Logical AND | PASS | planned |
-| `&!` | AND NOT | PASS | planned |
-| `\|\|` | Logical OR | PASS | planned |
-| `\|` | Bitwise OR | PASS | planned |
-| `&` | Bitwise AND | PASS | planned |
-| `&~` | Bitwise AND NOT | PASS | planned |
-| `>>` | Shift right | PASS | planned |
-| `<<` | Shift left | PASS | planned |
+| Operator | Meaning | Sprint 0 (Parse) | Sprint 1 (Execute) | Notes |
+|----------|---------|:-:|:-:|-------|
+| `&&` | Logical AND | PASS | Sprint 1 | Used in pilots |
+| `\|\|` | Logical OR | PASS | Sprint 2 | Not in pilots |
+| `!` / `NOT` | Logical NOT | PASS | Sprint 2 | Not in pilots |
+| `&!` | AND NOT | PASS | Sprint 2 | Not in pilots |
+| `\|` | Bitwise OR | PASS | Sprint 2 | Not in pilots |
+| `&` | Bitwise AND | PASS | Sprint 2 | Not in pilots |
+| `&~` | Bitwise AND NOT | PASS | Sprint 2 | Not in pilots |
+| `>>` | Shift right | PASS | Sprint 2 | Not in pilots |
+| `<<` | Shift left | PASS | Sprint 2 | Not in pilots |
 
 ## Arithmetic
 
