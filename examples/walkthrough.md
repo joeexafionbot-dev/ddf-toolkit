@@ -5,7 +5,13 @@ This guide walks through the core DDF Toolkit workflow using the Microsoft Calen
 ## Prerequisites
 
 ```bash
+# From PyPI (when published):
 pip install ddf-toolkit
+
+# From a local checkout:
+git clone https://github.com/joeexafionbot-dev/ddf-toolkit.git
+cd ddf-toolkit
+pip install -e .
 ```
 
 ## 1. Parse a DDF
