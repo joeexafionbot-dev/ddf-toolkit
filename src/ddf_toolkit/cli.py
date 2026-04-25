@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import importlib.metadata
+import json as json_mod
+import os
+import subprocess
 from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.console import Console
 
 app = typer.Typer(
     name="ddf",
@@ -14,10 +18,49 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 
+# Rich console respects NO_COLOR env and non-TTY
+_console = Console(
+    highlight=False,
+    no_color=os.environ.get("NO_COLOR") is not None,
+)
+_err_console = Console(
+    stderr=True,
+    highlight=False,
+    no_color=os.environ.get("NO_COLOR") is not None,
+)
+
 # -- Global options ----------------------------------------------------------
 
 _verbose = False
 _quiet = False
+
+
+def _info(msg: str) -> None:
+    """Print info message (suppressed by --quiet)."""
+    if not _quiet:
+        _console.print(msg)
+
+
+def _verbose_msg(msg: str) -> None:
+    """Print verbose message (only with --verbose)."""
+    if _verbose:
+        _err_console.print(f"[dim]{msg}[/dim]")
+
+
+def _error(msg: str) -> None:
+    """Print error message to stderr."""
+    _err_console.print(f"[red]{msg}[/red]")
+
+
+def _success(msg: str) -> None:
+    """Print success message."""
+    if not _quiet:
+        _console.print(f"[green]{msg}[/green]")
+
+
+def _warning(msg: str) -> None:
+    """Print warning message."""
+    _console.print(f"[yellow]{msg}[/yellow]")
 
 
 @app.callback()
@@ -35,11 +78,31 @@ def main(
 # -- Commands ----------------------------------------------------------------
 
 
+def _git_sha() -> str:
+    """Get short git SHA, or empty string if not in a git repo."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+    return ""
+
+
 @app.command()
 def version() -> None:
-    """Print version and exit."""
+    """Print version and git SHA."""
     v = importlib.metadata.version("ddf-toolkit")
-    typer.echo(f"ddf-toolkit {v}")
+    sha = _git_sha()
+    if sha:
+        _console.print(f"ddf-toolkit {v} ({sha})")
+    else:
+        _console.print(f"ddf-toolkit {v}")
 
 
 @app.command()
@@ -54,11 +117,17 @@ def parse(
     """Parse a DDF file and print its AST."""
     from ddf_toolkit.parser import parse_ddf
 
-    ddf = parse_ddf(file)
+    _verbose_msg(f"Parsing {file}")
+    try:
+        ddf = parse_ddf(file)
+    except Exception as e:
+        _error(f"Parse error: {e}")
+        raise typer.Exit(code=3) from e
+
     if json or fmt == "json":
-        typer.echo(ddf.to_json())
+        _console.print(ddf.to_json())
     else:
-        typer.echo(ddf.to_yaml())
+        _console.print(ddf.to_yaml())
 
 
 @app.command()
@@ -72,15 +141,23 @@ def validate(
     """Validate DDF file(s) against the schema."""
     from ddf_toolkit.parser import parse_ddf
 
+    results: list[dict[str, str]] = []
     errors_found = False
+
     for file in files:
+        _verbose_msg(f"Validating {file}")
         try:
             parse_ddf(file)
-            if not _quiet:
-                typer.echo(f"PASS  {file}")
+            results.append({"file": str(file), "status": "PASS"})
+            _success(f"PASS  {file}")
         except Exception as e:
             errors_found = True
-            typer.echo(f"FAIL  {file}: {e}", err=True)
+            results.append({"file": str(file), "status": "FAIL", "error": str(e)})
+            _error(f"FAIL  {file}: {e}")
+
+    if fmt == "json":
+        _console.print(json_mod.dumps(results, indent=2))
+
     if errors_found:
         raise typer.Exit(code=1)
 
@@ -97,19 +174,28 @@ def lint(
     from ddf_toolkit.linter import lint_ddf
     from ddf_toolkit.parser import parse_ddf
 
-    ddf = parse_ddf(file)
+    _verbose_msg(f"Linting {file}")
+    try:
+        ddf = parse_ddf(file)
+    except Exception as e:
+        _error(f"Parse error: {e}")
+        raise typer.Exit(code=3) from e
+
     findings = lint_ddf(ddf)
     has_errors = any(f.severity == "error" for f in findings)
 
     if fmt == "json":
-        import json as json_mod
-
-        typer.echo(json_mod.dumps([f.to_dict() for f in findings], indent=2))
+        _console.print(json_mod.dumps([f.to_dict() for f in findings], indent=2))
     else:
         for f in findings:
-            typer.echo(f"{f.severity.upper():7s} [{f.code}] {f.message}")
-        if not findings and not _quiet:
-            typer.echo(f"PASS  {file} — no findings")
+            if f.severity == "error":
+                _error(f"ERROR   [{f.code}] {f.message}")
+            elif f.severity == "warning":
+                _warning(f"WARNING [{f.code}] {f.message}")
+            else:
+                _info(f"INFO    [{f.code}] {f.message}")
+        if not findings:
+            _success(f"PASS  {file} — no findings")
 
     if has_errors:
         raise typer.Exit(code=1)
@@ -127,8 +213,8 @@ def formula(
     from ddf_toolkit.formula import parse_formula
 
     ast = parse_formula(expression)
-    typer.echo(f"Parsed AST: {ast}")
-    typer.echo("Note: Execution is not yet implemented (Sprint 1).", err=True)
+    _console.print(f"Parsed AST: {ast}")
+    _warning("Note: Execution is not yet implemented (Sprint 1).")
 
 
 @app.command()
@@ -138,7 +224,7 @@ def simulate(
     golden: Annotated[Path | None, typer.Option("--golden", help="Expected output JSON.")] = None,
 ) -> None:
     """Run a DDF against captured traffic (not yet implemented)."""
-    typer.echo("Simulation is not yet implemented (Sprint 1).", err=True)
+    _error("Simulation is not yet implemented (Sprint 1).")
     raise typer.Exit(code=3)
 
 
@@ -156,12 +242,17 @@ def sign(
     from ddf_toolkit.signing import sign_ddf
 
     if not key and not test:
-        typer.echo("Provide --key or --test", err=True)
+        _error("Provide --key or --test")
         raise typer.Exit(code=2)
 
-    sign_ddf(file, key=key, test=test, output=output)
-    if not _quiet:
-        typer.echo(f"Signed: {output or file}")
+    _verbose_msg(f"Signing {file}")
+    try:
+        sign_ddf(file, key=key, test=test, output=output)
+    except Exception as e:
+        _error(f"Signing failed: {e}")
+        raise typer.Exit(code=3) from e
+
+    _success(f"Signed: {output or file}")
 
 
 @app.command()
@@ -172,11 +263,17 @@ def verify(
     """Verify a signed DDF file."""
     from ddf_toolkit.signing import verify_ddf
 
-    ok = verify_ddf(file, key=key)
+    _verbose_msg(f"Verifying {file}")
+    try:
+        ok = verify_ddf(file, key=key)
+    except Exception as e:
+        _error(f"Verification error: {e}")
+        raise typer.Exit(code=3) from e
+
     if ok:
-        typer.echo(f"PASS  {file}")
+        _success(f"PASS  {file}")
     else:
-        typer.echo(f"FAIL  {file}", err=True)
+        _error(f"FAIL  {file}")
         raise typer.Exit(code=1)
 
 
@@ -192,6 +289,5 @@ def keygen(
     from ddf_toolkit.signing import generate_test_keypair
 
     private_path, public_path = generate_test_keypair(output=output)
-    if not _quiet:
-        typer.echo(f"Private key: {private_path}")
-        typer.echo(f"Public key:  {public_path}")
+    _success(f"Private key: {private_path}")
+    _success(f"Public key:  {public_path}")
