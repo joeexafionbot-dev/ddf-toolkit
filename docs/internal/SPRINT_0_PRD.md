@@ -1,5 +1,7 @@
 # Sprint 0 PRD — DDF Toolkit Core
 
+> **Amendment notice (2026-04-25):** Pre-implementation review of pilot DDFs revealed structural differences that affect scope. See [SPRINT_0_AMENDMENTS.md](SPRINT_0_AMENDMENTS.md) for binding scope changes, AST redesign decisions, and updated DoD. In case of conflict, the amendments document takes precedence.
+
 **Repo:** `mygekko/ddf-toolkit`
 **Sprint duration:** 3 weeks
 **Owner:** Joe (Claude Code) — implementation
