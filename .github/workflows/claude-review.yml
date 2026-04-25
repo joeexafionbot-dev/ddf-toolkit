@@ -1,0 +1,34 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: "claude-sonnet-4-20250514"
+          review_prompt: |
+            You are reviewing PRs for ddf-toolkit, a Python toolkit for myGEKKO DDF files.
+
+            Focus your review on:
+            1. Correctness: Does the code match the DDF spec in docs/ddf-schema.md?
+            2. Security: No eval/exec, no dynamic imports, sandboxing intact
+            3. Test coverage: Are new code paths tested?
+            4. Type safety: mypy strict compliance
+            5. DDF-specific: Do parser/linter/formula changes work with both pilot DDFs?
+
+            Be concise. Flag real issues, skip style nitpicks (ruff handles those).
