@@ -235,7 +235,7 @@ IF X.195 && ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) && (X.170 == 0) THEN
 ENDIF;""";1000;;;;;;;;;;;;;
 ;TOKEN_REFRESH_TIMER;Token Refresh Timer;180;;s;;;;"""X.180 := $.GPARAM.EXPIRESDATE - $.SYS.TIME;
 IF X.180 <= 0 THEN X.180 :=0; ENDIF;
-IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.180 == 0) THEN 
+IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.180 == 0) THEN
     GETTOKEN.F :=1;
     DEBUG_INFO := 'Token Request'; DEBUG(DEBUG_INFO);
 ENDIF;""";1000;;;;;;;;;;;;;
@@ -268,5 +268,3 @@ X.191 := CONCAT(TR_MSG_NOW,' | ',TR_MSG_UP,' ',STRNB,' h');""";1000;;;;;;;;;;;;;
 ;1;2;Token Reception;1;2;Error,Ok;0,1;;;;;201;;<=;0;140;;;;;;0;1
 ;1;3;Next Refresh;3;;;;;;;;181;;;;;;;;;;0;1
 ;1;4;Debug Verbose;1;;;;;;;;;;;;;;161;2;Off,On;0,1;0;1
-
-

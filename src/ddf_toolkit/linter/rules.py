@@ -128,12 +128,12 @@ class DDF008:
 
 
 RULES: list[LintRule] = [
-    DDF001(),  # type: ignore[list-item]
-    DDF003(),  # type: ignore[list-item]
-    DDF004(),  # type: ignore[list-item]
-    DDF005(),  # type: ignore[list-item]
-    DDF007(),  # type: ignore[list-item]
-    DDF008(),  # type: ignore[list-item]
+    DDF001(),
+    DDF003(),
+    DDF004(),
+    DDF005(),
+    DDF007(),
+    DDF008(),
 ]
 
 

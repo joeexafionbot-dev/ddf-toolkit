@@ -137,11 +137,11 @@ GETUSERID.F := 0;""";;;;;;;;;;;;;;;;;;;
 ;0;INFO;Info;;;;;;;;;;;;;;;;;;;;;
 ;1;USER;User;;;;;;;;;;;;;;;;;;;;;
 *ITEM;ALIAS;NAME;ID;VISIBILITY;UNIT;TYPE;DEFAULT;WFORMULA;RFORMULA;POLLING;COMMENT;;;;;;;;;;;;;
-;USER_NAME;User Name;0;;Firstname Lastname;;;"""IF ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) THEN 
+;USER_NAME;User Name;0;;Firstname Lastname;;;"""IF ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) THEN
     GETUSERID.F := 1;
 ENDIF;""";;;;;;;;;;;;;;;;
 ;USER_ID;User ID;1;;xxxxxxxx-xxxx-Uxxx-Vxxx-xxxxxxxxxxxx;;;;;;;;;;;;;;;;;;;
-;TEAM_NAME;Team Name;2;;;;;"""IF ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) THEN 
+;TEAM_NAME;Team Name;2;;;;;"""IF ( LEN($.GPARAM.ACCESSTOKEN) > 0 ) THEN
     GETTEAMID.F := 1;
 ENDIF;""";;;;;;;;;;;;;;;;
 ;TEAM_ID;Team ID;3;;xxxxxxxx-xxxx-Uxxx-Vxxx-xxxxxxxxxxxx;;;;;;;;;;;;;;;;;;;
@@ -155,7 +155,7 @@ ENDIF;""";;;;;;;;;;;;;;;;
 ;OUT_PRESENT;OUT Present;21;;1 = Present Now;;;;;;;;;;;;;;;;;;;
 ;OUT_HVAC;OUT HVAC;22;;1 = HVAC Now;;;;;;;;;;;;;;;;;;;
 ;OUT_STATE;OUT State;25;;0 = Away, 1 = Here, 2 = HVAC, 3 = Here and HVAC;;;;;;;;;;;;;;;;;;;
-;FULL_DAY_ABSENCE;Full Day Absence;28;;h;;;;"""IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) THEN 
+;FULL_DAY_ABSENCE;Full Day Absence;28;;h;;;;"""IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) THEN
     $.GPARAM.DAYSHIFT := X.28;
 ENDIF;""";5000;;;;;;;;;;;;;;
 ;REGULAR_PRESENCE_TODAY;Regular Presence Today;30;;HH:MM - HH:MM;;;;;;;;;;;;;;;;;;;
@@ -184,13 +184,13 @@ DEBUG($.GPARAM.VERBOSE);""";;;;;;;;;;;;;;;;
 ENDIF;""";;;;;;;;;;;;;;;;
 ;TIMER_TOKEN_REFRESH;Timer Token Refresh;180;;s;;;;"""X.180 := $.GPARAM.EXPIRESDATE - $.SYS.TIME;
 IF X.180 <= 0 THEN X.180 :=0; ENDIF;
-IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.180 == 0) THEN 
+IF ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.180 == 0) THEN
     GETTOKEN.F :=1;
     DEBUG_INFO := 'Token Request'; DEBUG(DEBUG_INFO);
 ENDIF;""";1000;;;;;;;;;;;;;;
 ;TIMER_SHIFT_REFRESH;Timer Shift Refresh;181;;s;;;;"""X.181 := $.GPARAM.EXPIRESDATE_SHIFTS - $.SYS.TIME;
 IF X.181 <= 0 THEN X.181 :=0; ENDIF;
-IF ( LEN($.GPARAM.ACCESSTOKEN) >0 ) && ( LEN(X.3) > 0 ) && ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.181 == 0) THEN 
+IF ( LEN($.GPARAM.ACCESSTOKEN) >0 ) && ( LEN(X.3) > 0 ) && ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) && X.195 && (X.181 == 0) THEN
     GETSHIFTS.F := 1;
     REF_TIME := $.SYS.TIME;
     YEAR := DATEYEAR(REF_TIME);
@@ -209,13 +209,13 @@ ENDIF;""";1000;;;;;;;;;;;;;;
 ;TIMER_ID_REFRESH;Timer ID Refresh;182;;s;;;;"""X.182 := EXPIRESDATE_ID - $.SYS.TIME;
 IF X.182 <= 0 THEN X.182 :=0; ENDIF;
 CONDITION := ( LEN($.GPARAM.ACCESSTOKEN) >0 ) && X.195 && (X.182 == 0);
-IF CONDITION && ( LEN(X.2) > 0) && (ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) THEN 
+IF CONDITION && ( LEN(X.2) > 0) && (ISEQUAL($.PARAM.SLAVE,$.GPARAM.SLAVE) THEN
     GETTEAMID.F := 1;
     DEBUG_INFO := 'Team ID Request'; DEBUG(DEBUG_INFO);
     EXPIRESDATE_ID := DEC($.SYS.TIME, 5000) * 5000 + 5000;
 ENDIF;
 IF CONDITION && ( LEN(X.0) > 0) && X.195 THEN
-    GETUSERID.F := 1;    
+    GETUSERID.F := 1;
     DEBUG_INFO := 'User ID Request'; DEBUG(DEBUG_INFO);
     EXPIRESDATE_ID := DEC($.SYS.TIME, 5000) * 5000 + 5000;
 ENDIF;""";1000;;;;;;;;;;;;;;
@@ -258,14 +258,14 @@ IF DO_RECALC && ( LEN(X.1) == 0 ) THEN
     X.10 := 'ERR: NO_USER_ID';
     X.208 := 1;
 ELSE
-    X.208 := 0;   
+    X.208 := 0;
 ENDIF;
 
 IF DO_RECALC THEN
     AS_START_ISO_UTC := JSONGETVALUEFROMARRAY($.GPARAM.SHIFTSDATA,'value','draftShift.startDateTime',AND,STRING,'userId','==',X.1);
     AS_END_ISO_UTC := JSONGETVALUEFROMARRAY($.GPARAM.SHIFTSDATA,'value','draftShift.endDateTime',AND,STRING,'userId','==',X.1);
     X.6 := AS_START_ISO_UTC;
-    X.7 := AS_END_ISO_UTC; 
+    X.7 := AS_END_ISO_UTC;
     X.8 := JSONGETVALUEFROMARRAY($.GPARAM.SHIFTSDATA,'value','draftShift.theme',AND,STRING,'userId','==',X.1);
     X.9 := JSONGETVALUEFROMARRAY($.GPARAM.SHIFTSDATA,'value','draftShift.notes',AND,STRING,'userId','==',X.1);
     X.10 := CONCAT(X.8,' | ',X.9);
@@ -296,7 +296,7 @@ IF DO_RECALC && RP_FOUND THEN
     RP_END_HM := SUBSTRING(RP_END_ISO,11,5);
     X.30 := CONCAT(RP_START_HM,' - ',RP_END_HM);
 ELSE IF DO_RECALC THEN
-    X.30 := '---';   
+    X.30 := '---';
 ENDIF;
 
 IF DO_RECALC && RP_FOUND && AS_FOUND && AS_DEFINES_RP THEN
@@ -316,17 +316,17 @@ ELSE
 ENDIF;
 
 
-IF DO_RECALC && AS_FOUND THEN 
+IF DO_RECALC && AS_FOUND THEN
     AS_START_ISO := ISO8601(AS_START,0);
     AS_END_ISO   := ISO8601(AS_END,0);
     AS_START_HM := SUBSTRING(AS_START_ISO,11,5);
     AS_END_HM   := SUBSTRING(AS_END_ISO,11,5);
     X.40 := CONCAT(AS_START_HM,' - ',AS_END_HM);
 ELSE IF DO_RECALC THEN
-    X.40 := '---';    
+    X.40 := '---';
 ENDIF;
 
-IF DO_RECALC THEN 
+IF DO_RECALC THEN
     ARRIVE_LEAD := X.38 * 60 * 60;
     DEPARTURE_LEAD := X.39 * 60 * 60;
     ARRIVE_LEAD := ROUND(ARRIVE_LEAD);
@@ -441,5 +441,3 @@ ENDIF;""";1000;;;;;;;;;;;;;;
 ;1;17;Presence Friday;103;;;;;;;;35;;;;;;;;;;2;1;08:00-17:00
 ;1;18;Presence Saturday;103;;;;;;;;36;;;;;;;;;;2;1;
 ;1;19;Presence Sunday;103;;;;;;;;37;;;;;;;;;;2;1;
-
-
