@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "ha_version": "2026.1.4",
+  "captured_at": "2026-04-25T10:00:00Z",
+  "entities": [
+    {"entity_id": "switch.location_a_plug", "state": "on", "attributes": {"friendly_name": "Plug A", "supported_features": 0}, "device_id": "dev_sonoff_1"},
+    {"entity_id": "switch.location_b_plug", "state": "off", "attributes": {"friendly_name": "Plug B", "supported_features": 0}, "device_id": "dev_sonoff_1"},
+    {"entity_id": "light.location_a_bulb", "state": "on", "attributes": {"friendly_name": "Bulb A", "brightness": 200, "color_temp": 370, "supported_features": 43}, "device_id": "dev_hue_1"},
+    {"entity_id": "light.location_b_bulb", "state": "on", "attributes": {"friendly_name": "Bulb B", "brightness": 128, "supported_features": 1}, "device_id": "dev_hue_1"},
+    {"entity_id": "sensor.location_a_temperature", "state": "22.5", "attributes": {"friendly_name": "Temp A", "unit_of_measurement": "°C", "device_class": "temperature"}, "device_id": "dev_aqara_1"},
+    {"entity_id": "sensor.location_a_humidity", "state": "55", "attributes": {"friendly_name": "Humidity A", "unit_of_measurement": "%", "device_class": "humidity"}, "device_id": "dev_aqara_1"},
+    {"entity_id": "binary_sensor.location_a_motion", "state": "off", "attributes": {"friendly_name": "Motion A", "device_class": "motion"}, "device_id": "dev_aqara_1"},
+    {"entity_id": "climate.location_a_thermostat", "state": "heat", "attributes": {"friendly_name": "Thermostat A", "temperature": 21.0, "current_temperature": 19.5, "hvac_modes": ["off", "heat", "cool", "auto"], "fan_modes": ["auto", "low", "high"], "supported_features": 9}, "device_id": "dev_tado_1"},
+    {"entity_id": "cover.location_a_blinds", "state": "open", "attributes": {"friendly_name": "Blinds A", "current_position": 100, "supported_features": 15}, "device_id": "dev_somfy_1"},
+    {"entity_id": "lock.location_a_door", "state": "locked", "attributes": {"friendly_name": "Door Lock A", "supported_features": 0}, "device_id": "dev_nuki_1"},
+    {"entity_id": "fan.location_a_ceiling", "state": "on", "attributes": {"friendly_name": "Ceiling Fan", "percentage": 50, "oscillating": false, "supported_features": 3}, "device_id": "dev_generic_fan_1"},
+    {"entity_id": "media_player.location_a_speaker", "state": "playing", "attributes": {"friendly_name": "Speaker A", "volume_level": 0.5, "source": "Spotify", "media_title": "Song A", "supported_features": 21389}, "device_id": "dev_sonos_1"},
+    {"entity_id": "vacuum.location_a_robot", "state": "docked", "attributes": {"friendly_name": "Robot Vacuum", "battery_level": 85, "fan_speed": "standard", "supported_features": 7420}, "device_id": "dev_roborock_1"},
+    {"entity_id": "sensor.helper_uptime", "state": "1234", "attributes": {"friendly_name": "Uptime", "unit_of_measurement": "s"}}
+  ],
+  "devices": [
+    {"id": "dev_sonoff_1", "name": "Sonoff Basic", "manufacturer": "Sonoff", "model": "Basic R3", "area": "location_a"},
+    {"id": "dev_hue_1", "name": "Hue Bridge", "manufacturer": "Signify", "model": "BSB002", "area": "location_a"},
+    {"id": "dev_aqara_1", "name": "Aqara Sensor Hub", "manufacturer": "Aqara", "model": "RTCGQ11LM", "area": "location_a"},
+    {"id": "dev_tado_1", "name": "Tado Thermostat", "manufacturer": "Tado", "model": "RU01", "area": "location_a"},
+    {"id": "dev_somfy_1", "name": "Somfy TaHoma", "manufacturer": "Somfy", "model": "TaHoma", "area": "location_a"},
+    {"id": "dev_nuki_1", "name": "Nuki Smart Lock", "manufacturer": "Nuki", "model": "3.0 Pro", "area": "location_a"},
+    {"id": "dev_generic_fan_1", "name": "Generic Fan", "manufacturer": "Generic", "model": "Ceiling Fan", "area": "location_a"},
+    {"id": "dev_sonos_1", "name": "Sonos One", "manufacturer": "Sonos", "model": "One", "area": "location_a"},
+    {"id": "dev_roborock_1", "name": "Roborock S7", "manufacturer": "Roborock", "model": "S7", "area": "location_a"}
+  ],
+  "services": {
+    "switch": [
+      {"service": "turn_on", "fields": {"entity_id": {"description": "Entity ID"}}},
+      {"service": "turn_off", "fields": {"entity_id": {"description": "Entity ID"}}},
+      {"service": "toggle", "fields": {"entity_id": {"description": "Entity ID"}}}
+    ],
+    "light": [
+      {"service": "turn_on", "fields": {"entity_id": {}, "brightness": {"description": "Brightness 0-255"}, "color_temp": {}}},
+      {"service": "turn_off", "fields": {"entity_id": {}}},
+      {"service": "toggle", "fields": {"entity_id": {}}}
+    ],
+    "climate": [
+      {"service": "set_temperature", "fields": {"entity_id": {}, "temperature": {}}},
+      {"service": "set_hvac_mode", "fields": {"entity_id": {}, "hvac_mode": {}}},
+      {"service": "set_fan_mode", "fields": {"entity_id": {}, "fan_mode": {}}}
+    ],
+    "lock": [
+      {"service": "lock", "fields": {"entity_id": {}}},
+      {"service": "unlock", "fields": {"entity_id": {}}}
+    ]
+  },
+  "config": {
+    "version": "2026.1.4",
+    "location_name": "Test Home"
+  }
+}
