@@ -60,7 +60,12 @@ def lex_ddf(path: Path) -> list[DDFRow]:
 
         # Section header
         if first.startswith("*"):
-            current_section = first
+            # Normalize alternative section names (DeviceLib.pdf p.5)
+            section_aliases = {
+                "*PREPROCESS": "*READ",
+                "*ONCHANGE": "*WRITE",
+            }
+            current_section = section_aliases.get(first, first)
             rows.append(DDFRow(line_number=line_number, section=current_section, cells=cells))
             continue
 
