@@ -1,4 +1,7 @@
-"""Formula lexer — tokenizes DDF script formulas."""
+"""Formula lexer — tokenizes DDF script formulas.
+
+Based on DeviceLib.pdf Section 2.6 (Formeln).
+"""
 
 from __future__ import annotations
 
@@ -18,6 +21,7 @@ class TokenType(Enum):
     MINUS = auto()  # -
     STAR = auto()  # *
     SLASH = auto()  # /
+    CARET = auto()  # ^
     EQ = auto()  # ==
     NEQ = auto()  # !=
     LT = auto()  # <
@@ -25,7 +29,13 @@ class TokenType(Enum):
     LTE = auto()  # <=
     GTE = auto()  # >=
     AND = auto()  # &&
+    ANDNOT = auto()  # &!
     OR = auto()  # ||
+    BOR = auto()  # |
+    BAND = auto()  # &
+    BANDNOT = auto()  # &~
+    SHR = auto()  # >>
+    SHL = auto()  # <<
 
     # Delimiters
     LPAREN = auto()  # (
@@ -35,12 +45,22 @@ class TokenType(Enum):
     DOT = auto()  # .
     COMMA = auto()  # ,
     SEMICOLON = auto()  # ;
+    COLON = auto()  # :
 
-    # Keywords
+    # Keywords — control flow
     IF = auto()
     THEN = auto()
     ELSE = auto()
     ENDIF = auto()
+    SWITCH = auto()
+    CASE = auto()
+    DEFAULT = auto()
+    ENDSWITCH = auto()
+    FOR = auto()
+    TO = auto()
+    BY = auto()
+    DO = auto()
+    ENDFOR = auto()
 
     # Special
     DOLLAR = auto()  # $
@@ -59,6 +79,15 @@ KEYWORDS = {
     "THEN": TokenType.THEN,
     "ELSE": TokenType.ELSE,
     "ENDIF": TokenType.ENDIF,
+    "SWITCH": TokenType.SWITCH,
+    "CASE": TokenType.CASE,
+    "DEFAULT": TokenType.DEFAULT,
+    "ENDSWITCH": TokenType.ENDSWITCH,
+    "FOR": TokenType.FOR,
+    "TO": TokenType.TO,
+    "BY": TokenType.BY,
+    "DO": TokenType.DO,
+    "ENDFOR": TokenType.ENDFOR,
 }
 
 MAX_FORMULA_SIZE = 4096  # 4 KB cap per PRD §6.3
@@ -82,35 +111,32 @@ def tokenize(source: str) -> list[Token]:
             i += 1
             continue
 
-        # Two-char operators
+        # Block comments: /* ... */
+        if c == "/" and i + 1 < n and source[i + 1] == "*":
+            i += 2
+            while i + 1 < n and not (source[i] == "*" and source[i + 1] == "/"):
+                i += 1
+            i += 2  # skip */
+            continue
+
+        # Two-char operators (order matters for disambiguation)
         if i + 1 < n:
             two = source[i : i + 2]
-            if two == ":=":
-                tokens.append(Token(TokenType.ASSIGN, ":=", i))
-                i += 2
-                continue
-            if two == "==":
-                tokens.append(Token(TokenType.EQ, "==", i))
-                i += 2
-                continue
-            if two == "!=":
-                tokens.append(Token(TokenType.NEQ, "!=", i))
-                i += 2
-                continue
-            if two == "<=":
-                tokens.append(Token(TokenType.LTE, "<=", i))
-                i += 2
-                continue
-            if two == ">=":
-                tokens.append(Token(TokenType.GTE, ">=", i))
-                i += 2
-                continue
-            if two == "&&":
-                tokens.append(Token(TokenType.AND, "&&", i))
-                i += 2
-                continue
-            if two == "||":
-                tokens.append(Token(TokenType.OR, "||", i))
+            two_char_map = {
+                ":=": TokenType.ASSIGN,
+                "==": TokenType.EQ,
+                "!=": TokenType.NEQ,
+                "<=": TokenType.LTE,
+                ">=": TokenType.GTE,
+                "&&": TokenType.AND,
+                "&!": TokenType.ANDNOT,
+                "&~": TokenType.BANDNOT,
+                "||": TokenType.OR,
+                ">>": TokenType.SHR,
+                "<<": TokenType.SHL,
+            }
+            if two in two_char_map:
+                tokens.append(Token(two_char_map[two], two, i))
                 i += 2
                 continue
 
@@ -120,6 +146,7 @@ def tokenize(source: str) -> list[Token]:
             "-": TokenType.MINUS,
             "*": TokenType.STAR,
             "/": TokenType.SLASH,
+            "^": TokenType.CARET,
             "<": TokenType.LT,
             ">": TokenType.GT,
             "(": TokenType.LPAREN,
@@ -129,7 +156,10 @@ def tokenize(source: str) -> list[Token]:
             ".": TokenType.DOT,
             ",": TokenType.COMMA,
             ";": TokenType.SEMICOLON,
+            ":": TokenType.COLON,
             "$": TokenType.DOLLAR,
+            "|": TokenType.BOR,
+            "&": TokenType.BAND,
         }
         if c in single_map:
             tokens.append(Token(single_map[c], c, i))
