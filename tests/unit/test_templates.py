@@ -173,6 +173,103 @@ class TestBinarySensorTemplate:
         assert "'on'" in (items[0].rformula or "")
 
 
+class TestClimateTemplate:
+    def test_build_items(self):
+        from ddf_toolkit.bridge.templates.climate import ClimateTemplate
+
+        t = ClimateTemplate()
+        entities = [
+            HAEntity(
+                entity_id="climate.thermo",
+                state="heat",
+                domain="climate",
+                attributes={
+                    "friendly_name": "Thermostat",
+                    "current_temperature": 19.5,
+                    "temperature": 21.0,
+                    "fan_modes": ["auto", "low"],
+                },
+            ),
+        ]
+        items = t.build_items(entities)
+        aliases = [i.alias for i in items]
+        assert "CLIMATE_THERMO_TEMP" in aliases
+        assert "CLIMATE_THERMO_SETPOINT" in aliases
+        assert "CLIMATE_THERMO_MODE" in aliases
+        assert "CLIMATE_THERMO_FAN" in aliases
+
+    def test_build_writes(self):
+        from ddf_toolkit.bridge.templates.climate import ClimateTemplate
+
+        t = ClimateTemplate()
+        writes = t.build_writes(
+            [HAEntity(entity_id="climate.x", state="heat", domain="climate")], []
+        )
+        aliases = [w.alias for w in writes]
+        assert "SVC_SET_TEMPERATURE" in aliases
+        assert "SVC_SET_HVAC_MODE" in aliases
+
+
+class TestMediaPlayerTemplate:
+    def test_build_items(self):
+        from ddf_toolkit.bridge.templates.media_player import MediaPlayerTemplate
+
+        t = MediaPlayerTemplate()
+        entities = [
+            HAEntity(
+                entity_id="media_player.speaker",
+                state="playing",
+                domain="media_player",
+                attributes={"friendly_name": "Speaker", "volume_level": 0.5},
+            ),
+        ]
+        items = t.build_items(entities)
+        aliases = [i.alias for i in items]
+        assert "MEDIA_PLAYER_SPEAKER" in aliases
+        assert "MEDIA_PLAYER_SPEAKER_VOL" in aliases
+        assert "MEDIA_PLAYER_SPEAKER_CMD" in aliases
+
+    def test_8_service_writes(self):
+        from ddf_toolkit.bridge.templates.media_player import MediaPlayerTemplate
+
+        t = MediaPlayerTemplate()
+        writes = t.build_writes(
+            [HAEntity(entity_id="media_player.x", state="idle", domain="media_player")], []
+        )
+        assert len(writes) == 9  # GETSTATES + 8 services
+
+
+class TestVacuumTemplate:
+    def test_build_items(self):
+        from ddf_toolkit.bridge.templates.vacuum import VacuumTemplate
+
+        t = VacuumTemplate()
+        entities = [
+            HAEntity(
+                entity_id="vacuum.robot",
+                state="docked",
+                domain="vacuum",
+                attributes={"friendly_name": "Robot", "battery_level": 85},
+            ),
+        ]
+        items = t.build_items(entities)
+        aliases = [i.alias for i in items]
+        assert "VACUUM_ROBOT" in aliases
+        assert "VACUUM_ROBOT_BATTERY" in aliases
+        assert "VACUUM_ROBOT_CMD" in aliases
+
+    def test_build_writes(self):
+        from ddf_toolkit.bridge.templates.vacuum import VacuumTemplate
+
+        t = VacuumTemplate()
+        writes = t.build_writes(
+            [HAEntity(entity_id="vacuum.x", state="docked", domain="vacuum")], []
+        )
+        aliases = [w.alias for w in writes]
+        assert "SVC_VAC_START" in aliases
+        assert "SVC_VAC_RETURN" in aliases
+
+
 class TestLockTemplate:
     def test_build_items(self):
         t = LockTemplate()
