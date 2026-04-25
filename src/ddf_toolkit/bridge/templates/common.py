@@ -78,6 +78,36 @@ def service_response_formula(alias: str) -> str:
     )
 
 
+def enum_rformula(entity_id: str, alias: str, values: list[str]) -> str:
+    """Generate RFORMULA for closed-domain enum mapping.
+
+    Maps HA string states to integer values for *OBJECT UI dropdown.
+    See docs/bridge.md String-vs-Enum Mapping Pattern.
+    """
+    lines = ["IF GETSTATES.HTTP_CODE == 200 THEN"]
+    for idx, value in enumerate(values):
+        prefix = "    IF" if idx == 0 else "    ELSE IF"
+        lines.append(f"{prefix} ISEQUAL(GETSTATES.VALUE.{entity_id}.state, '{value}') THEN")
+        lines.append(f"        X.{alias} := {idx};")
+    lines.append("    ENDIF;")
+    lines.append("ENDIF;")
+    return "\n".join(lines)
+
+
+def enum_attr_rformula(entity_id: str, alias: str, attr_name: str, values: list[str]) -> str:
+    """Generate RFORMULA for closed-domain enum on an attribute (not state)."""
+    lines = ["IF GETSTATES.HTTP_CODE == 200 THEN"]
+    for idx, value in enumerate(values):
+        prefix = "    IF" if idx == 0 else "    ELSE IF"
+        lines.append(
+            f"{prefix} ISEQUAL(GETSTATES.VALUE.{entity_id}.attributes.{attr_name}, '{value}') THEN"
+        )
+        lines.append(f"        X.{alias} := {idx};")
+    lines.append("    ENDIF;")
+    lines.append("ENDIF;")
+    return "\n".join(lines)
+
+
 def _getstates_formula() -> str:
     """Standard response formula for GETSTATES poll."""
     return (

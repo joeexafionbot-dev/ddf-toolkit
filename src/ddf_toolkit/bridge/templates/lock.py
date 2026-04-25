@@ -10,6 +10,7 @@ from ddf_toolkit.bridge.templates.base import DomainTemplate
 from ddf_toolkit.bridge.templates.common import (
     deduplicate_aliases,
     entity_alias,
+    enum_rformula,
     getstates_write,
     service_response_formula,
 )
@@ -33,14 +34,10 @@ class LockTemplate(DomainTemplate):
                     alias=alias,
                     name=entity.friendly_name,
                     id=idx * 10,
-                    rformula=(
-                        f"IF GETSTATES.HTTP_CODE == 200 THEN\n"
-                        f"    IF ISEQUAL(GETSTATES.VALUE.{entity.entity_id}.state, 'locked') THEN\n"
-                        f"        X.{alias} := 1;\n"
-                        f"    ELSE\n"
-                        f"        X.{alias} := 0;\n"
-                        f"    ENDIF;\n"
-                        f"ENDIF;"
+                    rformula=enum_rformula(
+                        entity.entity_id,
+                        alias,
+                        ["locked", "unlocked", "locking", "unlocking", "jammed"],
                     ),
                     polling=5000,
                 )
