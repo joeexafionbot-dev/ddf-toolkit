@@ -1,0 +1,24 @@
+name: Bug Report
+description: Report a bug in ddf-toolkit
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+  - type: input
+    id: version
+    attributes:
+      label: ddf-toolkit version
+      placeholder: "0.1.0"
