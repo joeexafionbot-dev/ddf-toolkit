@@ -54,6 +54,12 @@ jobs:
             --capture tests/fixtures/captures/microsoft_calendar_oauth_flow.har \
             --freeze-time 1745571600.0
 
+      - name: Smoke test — bridge generate
+        run: |
+          ddf bridge generate \
+            --source tests/fixtures/ha_snapshots/test_mixed_devices.json \
+            -o /tmp/bridge_ci_output
+
       - name: Build wheel and sdist
         run: python -m build
 
