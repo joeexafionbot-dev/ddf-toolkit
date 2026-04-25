@@ -30,7 +30,7 @@ class HAEntity:
 
     @property
     def friendly_name(self) -> str:
-        return self.attributes.get("friendly_name", self.entity_id)
+        return str(self.attributes.get("friendly_name", self.entity_id))
 
     @property
     def supported_features(self) -> int:
@@ -38,7 +38,7 @@ class HAEntity:
 
     @property
     def unit(self) -> str:
-        return self.attributes.get("unit_of_measurement", "")
+        return str(self.attributes.get("unit_of_measurement", ""))
 
 
 @dataclass

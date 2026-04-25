@@ -103,7 +103,7 @@ class HALiveSource:
 
     def load(self) -> HASnapshot:
         try:
-            import httpx
+            import httpx  # type: ignore[import-not-found]
         except ImportError as e:
             msg = "httpx is required for live HA source: pip install httpx"
             raise HASourceError(msg) from e
