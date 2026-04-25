@@ -158,3 +158,31 @@ class TestSwitchTemplate:
         state_item = next(i for i in items if "CMD" not in i.alias)
         assert state_item.rformula is not None
         assert "GETSTATES" in state_item.rformula
+
+    def test_error_handling_in_service_formula(self):
+        from ddf_toolkit.bridge.templates.switch import SwitchTemplate
+
+        template = SwitchTemplate()
+        writes = template.build_writes(
+            [HAEntity(entity_id="switch.x", state="on", domain="switch")], []
+        )
+        svc = next(w for w in writes if w.alias == "SVC_TURN_ON")
+        assert "401" in svc.formula  # handles token expired
+        assert "DEBUG" in svc.formula  # uses DEBUG for logging
+        assert ".F := 0" in svc.formula  # resets trigger
+
+    def test_alias_collision_detection(self):
+        from ddf_toolkit.bridge.templates.common import deduplicate_aliases
+
+        seen: set[str] = set()
+        a1 = deduplicate_aliases("SWITCH_PLUG", seen)
+        seen.add(a1)
+        assert a1 == "SWITCH_PLUG"
+
+        a2 = deduplicate_aliases("SWITCH_PLUG", seen)
+        seen.add(a2)
+        assert a2 == "SWITCH_PLUG_2"
+
+        a3 = deduplicate_aliases("SWITCH_PLUG", seen)
+        seen.add(a3)
+        assert a3 == "SWITCH_PLUG_3"

@@ -2,18 +2,20 @@
 
 HA switch entities have: on/off state, turn_on/turn_off/toggle services.
 This is the pattern prototype — all other templates follow this structure.
+See docs/bridge.md for the canonical pattern documentation.
 """
 
 from __future__ import annotations
 
 from ddf_toolkit.bridge.models import HAEntity, HAService
 from ddf_toolkit.bridge.templates.base import DomainTemplate
-from ddf_toolkit.parser.ast import ArgsDef, Item, WriteCommand
-
-
-def _entity_alias(entity_id: str) -> str:
-    """Convert HA entity_id to DDF-style alias: light.living_room → LIGHT_LIVING_ROOM."""
-    return entity_id.replace(".", "_").upper()
+from ddf_toolkit.bridge.templates.common import (
+    deduplicate_aliases,
+    entity_alias,
+    getstates_write,
+    service_response_formula,
+)
+from ddf_toolkit.parser.ast import Item, WriteCommand
 
 
 class SwitchTemplate(DomainTemplate):
@@ -24,8 +26,12 @@ class SwitchTemplate(DomainTemplate):
 
     def build_items(self, entities: list[HAEntity]) -> list[Item]:
         items: list[Item] = []
+        seen_aliases: set[str] = set()
+
         for idx, entity in enumerate(entities):
-            alias = _entity_alias(entity.entity_id)
+            alias = deduplicate_aliases(entity_alias(entity.entity_id), seen_aliases)
+            seen_aliases.add(alias)
+
             # State item (read-only, polled from HA)
             items.append(
                 Item(
@@ -38,9 +44,11 @@ class SwitchTemplate(DomainTemplate):
                 )
             )
             # Command item (write, triggers service call)
+            cmd_alias = deduplicate_aliases(f"{alias}_CMD", seen_aliases)
+            seen_aliases.add(cmd_alias)
             items.append(
                 Item(
-                    alias=f"{alias}_CMD",
+                    alias=cmd_alias,
                     name=f"{entity.friendly_name} Command",
                     id=idx * 10 + 1,
                     wformula=_write_formula(entity, alias),
@@ -52,73 +60,11 @@ class SwitchTemplate(DomainTemplate):
         self, entities: list[HAEntity], services: list[HAService]
     ) -> list[WriteCommand]:
         writes: list[WriteCommand] = []
-
-        # GETSTATES — poll all entity states
-        writes.append(
-            WriteCommand(
-                alias="GETSTATES",
-                method="GET",
-                url=None,
-                datatype="JSON",
-                formula=_getstates_formula(entities),
-                args=[
-                    ArgsDef(
-                        method=None,
-                        alias="GETSTATES",
-                        type="url",
-                        name="/api/states",
-                        value="",
-                    ),
-                    ArgsDef(
-                        method=None,
-                        alias="GETSTATES",
-                        type="header",
-                        name="Authorization",
-                        value="",
-                        item="$.CONFIG.1",
-                        format="Bearer %s",
-                    ),
-                ],
-            )
-        )
+        writes.append(getstates_write())
 
         # Service calls: turn_on, turn_off
         for service_name in ["turn_on", "turn_off"]:
-            alias = f"SVC_{service_name.upper()}"
-            writes.append(
-                WriteCommand(
-                    alias=alias,
-                    method="POST",
-                    url=None,
-                    datatype="JSON",
-                    formula=_service_response_formula(alias),
-                    args=[
-                        ArgsDef(
-                            method=None,
-                            alias=alias,
-                            type="url",
-                            name=f"/api/services/switch/{service_name}",
-                            value="",
-                        ),
-                        ArgsDef(
-                            method=None,
-                            alias=alias,
-                            type="header",
-                            name="Authorization",
-                            value="",
-                            item="$.CONFIG.1",
-                            format="Bearer %s",
-                        ),
-                        ArgsDef(
-                            method=None,
-                            alias=alias,
-                            type="header",
-                            name="Content-Type",
-                            value="application/json",
-                        ),
-                    ],
-                )
-            )
+            writes.append(_service_write("switch", service_name))
 
         return writes
 
@@ -143,24 +89,40 @@ def _write_formula(entity: HAEntity, alias: str) -> str:
     )
 
 
-def _getstates_formula(entities: list[HAEntity]) -> str:
-    """Generate response formula for GETSTATES write."""
-    lines = ["IF GETSTATES.HTTP_CODE == 200 THEN"]
-    lines.append("    X.200 := 1;")
-    lines.append("ELSE")
-    lines.append("    X.200 := 0;")
-    lines.append("ENDIF;")
-    lines.append("GETSTATES.F := 0;")
-    return "\n".join(lines)
+def _service_write(domain: str, service: str) -> WriteCommand:
+    """Build a standard HA service call write."""
+    from ddf_toolkit.parser.ast import ArgsDef
 
-
-def _service_response_formula(alias: str) -> str:
-    """Generate response formula for a service call."""
-    return (
-        f"IF {alias}.HTTP_CODE == 200 THEN\n"
-        f"    DEBUG('Service call OK');\n"
-        f"ELSE\n"
-        f"    DEBUG({alias}.HTTP_DATA);\n"
-        f"ENDIF;\n"
-        f"{alias}.F := 0;"
+    alias = f"SVC_{service.upper()}"
+    return WriteCommand(
+        alias=alias,
+        method="POST",
+        url=None,
+        datatype="JSON",
+        formula=service_response_formula(alias),
+        args=[
+            ArgsDef(
+                method=None,
+                alias=alias,
+                type="url",
+                name=f"/api/services/{domain}/{service}",
+                value="",
+            ),
+            ArgsDef(
+                method=None,
+                alias=alias,
+                type="header",
+                name="Authorization",
+                value="",
+                item="$.CONFIG.1",
+                format="Bearer %s",
+            ),
+            ArgsDef(
+                method=None,
+                alias=alias,
+                type="header",
+                name="Content-Type",
+                value="application/json",
+            ),
+        ],
     )
