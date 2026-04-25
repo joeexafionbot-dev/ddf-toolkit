@@ -53,7 +53,12 @@ class TestLightTemplate:
                 entity_id="light.bulb",
                 state="on",
                 domain="light",
-                attributes={"friendly_name": "Bulb", "supported_features": 3, "brightness": 200, "color_temp": 370},
+                attributes={
+                    "friendly_name": "Bulb",
+                    "supported_features": 3,
+                    "brightness": 200,
+                    "color_temp": 370,
+                },
             ),
         ]
         items = t.build_items(entities)
@@ -63,9 +68,7 @@ class TestLightTemplate:
 
     def test_build_writes(self):
         t = LightTemplate()
-        writes = t.build_writes(
-            [HAEntity(entity_id="light.x", state="on", domain="light")], []
-        )
+        writes = t.build_writes([HAEntity(entity_id="light.x", state="on", domain="light")], [])
         aliases = [w.alias for w in writes]
         assert "GETSTATES" in aliases
         assert "SVC_LIGHT_TURN_ON" in aliases
@@ -95,9 +98,7 @@ class TestCoverTemplate:
 
     def test_build_writes(self):
         t = CoverTemplate()
-        writes = t.build_writes(
-            [HAEntity(entity_id="cover.x", state="open", domain="cover")], []
-        )
+        writes = t.build_writes([HAEntity(entity_id="cover.x", state="open", domain="cover")], [])
         aliases = [w.alias for w in writes]
         assert "SVC_OPEN_COVER" in aliases
         assert "SVC_CLOSE_COVER" in aliases
@@ -127,9 +128,7 @@ class TestFanTemplate:
 
     def test_build_writes(self):
         t = FanTemplate()
-        writes = t.build_writes(
-            [HAEntity(entity_id="fan.x", state="on", domain="fan")], []
-        )
+        writes = t.build_writes([HAEntity(entity_id="fan.x", state="on", domain="fan")], [])
         aliases = [w.alias for w in writes]
         assert "SVC_FAN_TURN_ON" in aliases
         assert "SVC_FAN_TURN_OFF" in aliases
@@ -153,9 +152,7 @@ class TestSensorTemplate:
 
     def test_read_only(self):
         t = SensorTemplate()
-        writes = t.build_writes(
-            [HAEntity(entity_id="sensor.x", state="0", domain="sensor")], []
-        )
+        writes = t.build_writes([HAEntity(entity_id="sensor.x", state="0", domain="sensor")], [])
         assert len(writes) == 1  # Only GETSTATES, no service calls
 
 
