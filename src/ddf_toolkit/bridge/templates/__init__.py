@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from ddf_toolkit.bridge.templates.base import DomainTemplate
 from ddf_toolkit.bridge.templates.binary_sensor import BinarySensorTemplate
+from ddf_toolkit.bridge.templates.climate import ClimateTemplate
 from ddf_toolkit.bridge.templates.cover import CoverTemplate
 from ddf_toolkit.bridge.templates.fan import FanTemplate
 from ddf_toolkit.bridge.templates.light import LightTemplate
 from ddf_toolkit.bridge.templates.lock import LockTemplate
+from ddf_toolkit.bridge.templates.media_player import MediaPlayerTemplate
 from ddf_toolkit.bridge.templates.sensor import SensorTemplate
 from ddf_toolkit.bridge.templates.switch import SwitchTemplate
+from ddf_toolkit.bridge.templates.vacuum import VacuumTemplate
 
 TEMPLATES: dict[str, DomainTemplate] = {
     "switch": SwitchTemplate(),
@@ -19,6 +22,9 @@ TEMPLATES: dict[str, DomainTemplate] = {
     "light": LightTemplate(),
     "cover": CoverTemplate(),
     "fan": FanTemplate(),
+    "climate": ClimateTemplate(),
+    "media_player": MediaPlayerTemplate(),
+    "vacuum": VacuumTemplate(),
 }
 
 
