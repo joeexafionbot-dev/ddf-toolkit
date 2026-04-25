@@ -11,6 +11,7 @@ from ddf_toolkit.bridge.templates.base import DomainTemplate
 from ddf_toolkit.bridge.templates.common import (
     deduplicate_aliases,
     entity_alias,
+    enum_rformula,
     getstates_write,
     service_response_formula,
 )
@@ -37,14 +38,10 @@ class CoverTemplate(DomainTemplate):
                     alias=alias,
                     name=entity.friendly_name,
                     id=base_id,
-                    rformula=(
-                        f"IF GETSTATES.HTTP_CODE == 200 THEN\n"
-                        f"    IF ISEQUAL(GETSTATES.VALUE.{entity.entity_id}.state, 'open') THEN\n"
-                        f"        X.{alias} := 1;\n"
-                        f"    ELSE\n"
-                        f"        X.{alias} := 0;\n"
-                        f"    ENDIF;\n"
-                        f"ENDIF;"
+                    rformula=enum_rformula(
+                        entity.entity_id,
+                        alias,
+                        ["closed", "open", "opening", "closing"],
                     ),
                     polling=5000,
                 )

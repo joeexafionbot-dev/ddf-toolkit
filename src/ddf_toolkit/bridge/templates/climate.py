@@ -11,6 +11,8 @@ from ddf_toolkit.bridge.templates.base import DomainTemplate
 from ddf_toolkit.bridge.templates.common import (
     deduplicate_aliases,
     entity_alias,
+    enum_attr_rformula,
+    enum_rformula,
     getstates_write,
     service_response_formula,
 )
@@ -77,10 +79,10 @@ class ClimateTemplate(DomainTemplate):
                     alias=mode_alias,
                     name=f"{entity.friendly_name} Mode",
                     id=base_id + 2,
-                    rformula=(
-                        f"IF GETSTATES.HTTP_CODE == 200 THEN\n"
-                        f"    X.{mode_alias} := GETSTATES.VALUE.{entity.entity_id}.state;\n"
-                        f"ENDIF;"
+                    rformula=enum_rformula(
+                        entity.entity_id,
+                        mode_alias,
+                        ["off", "heat", "cool", "auto", "heat_cool", "dry", "fan_only"],
                     ),
                     polling=5000,
                 )
@@ -96,10 +98,11 @@ class ClimateTemplate(DomainTemplate):
                         alias=fan_alias,
                         name=f"{entity.friendly_name} Fan Mode",
                         id=base_id + 3,
-                        rformula=(
-                            f"IF GETSTATES.HTTP_CODE == 200 THEN\n"
-                            f"    X.{fan_alias} := GETSTATES.VALUE.{entity.entity_id}.attributes.fan_mode;\n"
-                            f"ENDIF;"
+                        rformula=enum_attr_rformula(
+                            entity.entity_id,
+                            fan_alias,
+                            "fan_mode",
+                            fan_modes,
                         ),
                         polling=5000,
                     )

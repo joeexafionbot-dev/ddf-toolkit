@@ -156,3 +156,45 @@ Example: 0x0DFA00A3B7C1D20100
 - Max 25 items per DDF (controller limit is 30, with 5 headroom)
 - If a group exceeds 25: split by HA area
 - Fallback: numeric split (items 1-25, 26-50, etc.)
+
+## String-vs-Enum Mapping Pattern
+
+HA entity states fall into two categories:
+
+### Open Value Domain → Pass-Through
+State values with unbounded or continuous ranges. Stored as-is (string or number).
+
+Examples: `sensor` temperature (22.5), `sensor` humidity (55), `cover` position (0-100),
+`light` brightness (0-255), `light` color_temp (mireds).
+
+RFORMULA: `X.{ALIAS} := GETSTATES.VALUE.{entity_id}.state;`
+
+### Closed Value Domain → Enum-Mapping
+State values from a fixed set of known strings. Mapped to integers for `*OBJECT` UI
+(TYPE=1 with ENUM/ENUMTEXT/ENUMVAL enables dropdown selection in myGEKKO UI).
+
+| Domain | Field | Values | Enum Mapping |
+|--------|-------|--------|--------------|
+| `climate` | hvac_mode | off, heat, cool, auto, heat_cool, dry, fan_only | 0-6 |
+| `climate` | fan_mode | auto, low, medium, high | 0-3 |
+| `cover` | state | closed, open, opening, closing | 0-3 |
+| `lock` | state | locked, unlocked, locking, unlocking, jammed | 0-4 |
+| `media_player` | state | off, idle, playing, paused, standby | 0-4 |
+| `vacuum` | state | docked, cleaning, returning, paused, idle, error | 0-5 |
+| `fan` | state | off, on | 0-1 (same as switch) |
+
+RFORMULA pattern for closed-domain states:
+```
+IF GETSTATES.HTTP_CODE == 200 THEN
+    IF ISEQUAL(GETSTATES.VALUE.{entity_id}.state, 'off') THEN
+        X.{ALIAS} := 0;
+    ELSE IF ISEQUAL(GETSTATES.VALUE.{entity_id}.state, 'heat') THEN
+        X.{ALIAS} := 1;
+    ELSE IF ISEQUAL(GETSTATES.VALUE.{entity_id}.state, 'cool') THEN
+        X.{ALIAS} := 2;
+    ENDIF;
+ENDIF;
+```
+
+**Rule:** If a domain's state is in the table above → use enum mapping.
+Otherwise → pass-through.
