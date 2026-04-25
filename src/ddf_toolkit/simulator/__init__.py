@@ -1,4 +1,8 @@
-"""DDF simulator — Sprint 1 stub.
+"""DDF simulator — run DDFs against HAR-captured traffic."""
 
-See: https://github.com/joeexafionbot-dev/ddf-toolkit/issues/2
-"""
+from __future__ import annotations
+
+from ddf_toolkit.simulator.har_loader import HARLoader
+from ddf_toolkit.simulator.runner import SimulationResult, run_simulation
+
+__all__ = ["HARLoader", "SimulationResult", "run_simulation"]
